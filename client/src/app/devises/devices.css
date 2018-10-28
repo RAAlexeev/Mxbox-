@@ -1,0 +1,9 @@
+.messageCard {
+  margin-bottom: 1rem;
+  overflow: visible;
+}
+
+.iconMenu{
+  text-align: none!important;
+  float: right;
+}
