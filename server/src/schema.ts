@@ -22,8 +22,13 @@ import gql from 'graphql-tag'
       smss:[Sms] 
       emails:[Email] 
     }
+    input RuleInput{
+        _id:ID
+        enabled:Boolean
+        condition:String
+    }
     type Device{
-        name:String!
+        name:String
         mb_addr: Int
         _id: ID!
         ip_addr: String
@@ -32,13 +37,14 @@ import gql from 'graphql-tag'
     }
     input DeviceInput
     {
+      _id:ID
       name:String
       mb_addr:Int
       ip_addr:String
     }
     type Query {
       devices:[Device]
-      rules:[Rule]
+      rules(device:ID!):[Rule]
       device(id:ID!):Device
     }
     type Result{
@@ -46,9 +52,10 @@ import gql from 'graphql-tag'
     }
     type Mutation{
       addDevice(device:DeviceInput!):Device
-      updDevice(_id:ID!,device:DeviceInput!):Device
+      updDevice(deviceInput:DeviceInput!):Result
       delDevice(_id:ID):Result
-      addRule(device:ID!):Rule
+      addRule(device:ID!):Result
+      delRule(device:ID!,num:Int):Result
       updateConditoin(rule:ID!):String
       addSms(rule:ID!):Sms
       addEmail(rule:ID!):Email
@@ -85,20 +92,25 @@ class Device implements DeviceInput{
  export const resolvers = {
   Query: {
     devices: (parent) => {
-      var callback = function(err,dev){ if(err){ console.log(err); this.reject(err)} else this.resolve(dev) }         
+      var callback = function(err,dev){ if( err ){ console.log(err); this.reject(err)} else this.resolve(dev) }         
       const p = new Promise((resolve,reject)=>{db.find( {}, callback.bind({resolve,reject}))})    
       return p.then().catch()   
-    }
+    },
+    rules: (parent, args) => {
+      var callback = function(err,dev){   console.log("callback(",dev,")");   if( err ){ console.log(err); this.reject(err)} else this.resolve(dev[0].rules) }         
+      const p = new Promise((resolve,reject)=>{db.find( {_id:args.device }, callback.bind({resolve,reject}))})    
+      return p.then().catch()   
+    },  
   },
   Mutation:{
       addDevice(parent,args,context,info){
-            var callback = function(err,dev){ if(err){ console.log(err); this.reject(err)} else this.resolve(dev) }         
+            var callback = function( err, dev){ if( err ){ console.log(err); this.reject(err)} else this.resolve(dev) }         
             const p = new Promise((resolve,reject)=>{db.insert( args.device, callback.bind({resolve,reject}))})    
             return p.then().catch()     
        },
       updDevice(parent,args,context,info){
-          var callback = function(err, numAffected, affectedDocuments, upsert){/* console.log("callback(",arguments,")"); */ if(err){ console.log(err); this.reject(err)} else this.resolve(affectedDocuments) }         
-          const p = new Promise((resolve,reject)=>{db.update<void>({_id:args._id}, args.device,{returnUpdatedDocs:true}, callback.bind({resolve,reject}))})    
+          var callback = function(err, numAffected, affectedDocuments, upsert){/* console.log("callback(",arguments,")"); */ if(err){ console.log(err); this.reject(err)} else this.resolve("OK") }         
+          const p = new Promise((resolve,reject)=>{db.update<void>({_id:args.deviceInput._id}, {$set:args.deviceInput},{}, callback.bind({resolve,reject}))})    
           return p.then().catch()    
       },
       delDevice(parent,args,context,info){
@@ -107,10 +119,15 @@ class Device implements DeviceInput{
         return p.then().catch()    
       },
       addRule(parent,args,context,info){
-        var callback = function(err, cnt ){/* console.log("callback(",arguments,")"); */ if(err){ console.log(err); this.reject({status:err})} else this.resolve({status:"OK"}) }         
-        const p = new Promise((resolve,reject)=>{db.update<void>({_id:args.device}, callback.bind({resolve,reject}))})    
+        var callback = function(err, device ){/* console.log("callback(",arguments,")"); */ if(err){ console.log(err); this.reject({status:err})} else this.resolve({status:'OK'}) }         
+        const p = new Promise((resolve,reject)=>{db.update<void>({_id:args.device}, {$push:{rules:{enabled:false}}},{}, callback.bind({resolve,reject}))})    
         return p.then().catch()    
       },
-
+      delRule(parent,args,context,info){
+        var callback = function(err, cnt ){/* console.log("callback(",arguments,")"); */ if(err){ console.log(err); this.reject({status:err})} else this.resolve({status:"OK"}) }         
+        const p = new Promise((resolve,reject)=>{db.remove({_id:args.device}, callback.bind({resolve,reject}))})    
+        return p.then().catch()    
+      },
+      
   }   
 }

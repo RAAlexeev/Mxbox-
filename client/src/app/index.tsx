@@ -6,13 +6,15 @@ import { Provider } from 'mobx-react'
 
 import { Router, Route, Redirect, Switch } from 'react-router'
 
+
 import { App } from './app.component'
 import { AppStore } from './app.store'
 import { RouterStore } from './router.store'
 
 import { Form } from './form/form.component'
 import { Home } from './home/home.component'
-import { Posts } from './posts/posts.component'
+import { containerRules } from './rules/container.rules';
+import { DevRules } from './rules/rules.component';
 
 
 const appStore = AppStore.getInstance()
@@ -25,11 +27,11 @@ const rootStores = {
 
 ReactDOM.render(
    <Provider {...rootStores} >
-    <Router history={routerStore.history} >
+      <Router history={routerStore.history} >
       <App>
         <Switch>
           <Route exact path='/home' component={Home as any} />
-          <Route exact path={`/rules:devName`} component={Posts as any} />
+          <Route   path={"/rules/:name/:id"} component={containerRules as any} />
           <Route exact path='/form' component={Form as any} />
           <Redirect from='/' to='/home' />
         </Switch>
