@@ -1,8 +1,9 @@
-import { observable, action } from 'mobx'
+import { observable, action, runInAction } from 'mobx'
 import gql from 'graphql-tag'
 import { AppStore } from '../app.store'
 import { arrayRemove } from '../utils';
 import { DeviceState } from './device.state';
+import { select } from 'async';
 
 const DevicesQuery = gql`
   query DevicesQuery {
@@ -60,10 +61,13 @@ export class DevicesStore {
  // deviceSubscription
 
   @observable devices: Array<Device> = []
-
+  @observable selected: Device
+   
+  @observable isEdit:boolean
   constructor() {
     let self = this
     this.appStore = AppStore.getInstance()
+    this.isEdit = false
 /*      this.deviceSubscription = this.appStore.apolloClient.subscribe({
       query: DevicesSubscription,
       // This way realtime updates will work only when both posting and reading users have the same name. Proof of concept.
@@ -88,6 +92,7 @@ export class DevicesStore {
     })
    
     this.devices = result.data.devices
+    this.selected = this.devices[0];
   }
   async addDevice() {
      const result = await this.appStore.apolloClient.mutate<DevicesQueryResult,{}>({
@@ -157,4 +162,11 @@ ip_addrOnChange(device:Device,deviceStore:DevicesStore,value){
     device.ip_addr =val.replace(/\.+/g,'.')// ip?(ip[0]+(ip[1]||ip[1].isEmpty?'.'+ip[1]:'')+(ip[2]?ip[2]:'') + (ip[3]?ip[3]:'')):val//value.replace(/[^\d,.]*/g,'').replace(/(\d{3})\d+/g,'$1\.');
     deviceStore.updDevice({_id:device._id, ip_addr:device.ip_addr})
 }
+ disabled(device:Device){
+   let res =  (device == this.selected && this.isEdit)
+    return !res
 }
+
+}
+
+

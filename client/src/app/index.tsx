@@ -29,9 +29,9 @@ ReactDOM.render(
    <Provider {...rootStores} >
       <Router history={routerStore.history} >
       <App>
-        <Switch>
+        <Switch >
           <Route exact path='/home' component={Home as any} />
-          <Route   path={"/rules/:name/:id"} component={containerRules as any} />
+          <Route exact  path={"/rules/:name/:id"} component={DevRules as any} />
           <Route exact path='/form' component={Form as any} />
           <Redirect from='/' to='/home' />
         </Switch>

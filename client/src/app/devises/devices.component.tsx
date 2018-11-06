@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { inject, observer, Provider } from 'mobx-react'
-import { observable, action } from 'mobx'
+import { observable, action, runInAction } from 'mobx'
 import { Card, CardMedia, CardTitle, CardText, CardActions } from 'react-toolbox/lib/card'
 import { NavLink, Switch, Route, Router, BrowserRouter } from 'react-router-dom'
 import { Button } from 'react-toolbox/lib/button'
@@ -13,6 +13,7 @@ import { Input } from 'react-toolbox/lib/input'
 import RouterStore from '../router.store';
 import { RulesStore } from '../rules/rules.store';
 import { DevRules } from '../rules/rules.component';
+
 @observer
 export class Devices extends React.Component<any, any> {
 
@@ -20,6 +21,7 @@ export class Devices extends React.Component<any, any> {
   componentWillMount() {
     this.devicesStore = new DevicesStore()
     this.devicesStore.initializeDevices()
+   
   }
 
   componentWillUnmount() {
@@ -28,7 +30,7 @@ export class Devices extends React.Component<any, any> {
 
   render() {
     return <Provider devicesStore={this.devicesStore}>
-      <DevicesComponent devicesStore={this.devicesStore} />
+      <DevicesComponent  {...this.props.children} devicesStore={this.devicesStore} />
     </Provider>
   }
 }
@@ -43,20 +45,23 @@ interface DevicesComponentProps {
 @observer
 export class DevicesComponent extends React.Component<DevicesComponentProps, any> {
   render() {
+    
     const { devicesStore, appStore, routerStore } = this.props
+    console.log(this.props)
     return <div>
 
         <Button icon='add' onClick={devicesStore.addDevice.bind(devicesStore)} floating accent mini className={appStyle.floatRight} />
-   
+      
       <h3>Hello {appStore.username}</h3>
      <nav>
       {devicesStore.devices.map(device =>
-        <Card  className={style.messageCard} >
-         <NavLink key={device._id}  to={`/rules/${device.name}/${device._id}`} activeClassName={style.active} isActive={(_, { pathname }) =>{console.log(pathname); return pathname === `/rules/${device.name}/:${device._id}`}}>
+        <Card  className={style.messageCard} activeClassName={style.active} >
+         <NavLink key={device._id}  to={`/rules/${device.name}/${device._id}`} activeClassName={style.active} isActive={(_, { pathname }) =>{ return pathname === `/rules/${device.name}/:${device._id}`}}>
           <CardTitle className ={style.cardTitle}
             title={ ContextMenu( devicesStore, device ) }
-            subtitle='отсутсвует'/>            
+            subtitle='нет связи'/>            
             <Input 
+              disabled = {!(devicesStore.isEdit && routerStore.location.pathname == `/rules/${device.name}/${device._id}`)}
               className={style.addr}
                type='text'
                name='mb_addr'
@@ -68,6 +73,7 @@ export class DevicesComponent extends React.Component<DevicesComponentProps, any
                onChange={devicesStore.mb_addrOnChange.bind(this, device, devicesStore)}
               />       
               <Input 
+              disabled = {!(devicesStore.isEdit && routerStore.location.pathname == `/rules/${device.name}/${device._id}`)}
               className={style.ip}
                type='text'
                name='mb_addr'

@@ -19,8 +19,9 @@ export class DevRules extends React.Component<any, any> {
   componentWillMount() {
     this.rulesStore = new RulesStore()
     console.log(this.props);
-    console.log(this.props.match);
-    this.rulesStore.initializeRules(this.props.match)
+    
+ 
+    //this.rulesStore.initializeRules(this.props.match)
   }
 
   componentWillUnmount() {
@@ -29,9 +30,10 @@ export class DevRules extends React.Component<any, any> {
 
   render() {  this.rulesStore = new RulesStore()
     this.rulesStore.initializeRules(this.props.match)
-    //const { id } = props.params
+   
     return <Provider rulesStore={this.rulesStore}>
-    <RulesComponent  />
+ 
+    <RulesComponent {...this.props} />
     </Provider>
   }
    
@@ -48,11 +50,11 @@ interface RulesComponentProps {
 export class RulesComponent extends React.Component<RulesComponentProps, any> { 
    render() {
     let i = 0 ;
-    const { rulesStore, appStore } = this.props
+    const { rulesStore, appStore } = this.props 
+    const { name } = this.props.match.params
     return <div>
-       
         <Button icon='add' onClick={rulesStore.addRule.bind(rulesStore)} floating accent mini className={appStyle.floatRight} />
- 
+        {name}
         {rulesStore.rules.map(rule =>
        
         <Card key={i++} className={style.messageCard} >

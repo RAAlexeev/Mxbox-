@@ -35,10 +35,10 @@ toggleSidebar = () => {
       <NavDrawer active={this.state.drawerActive}
                 pinned={this.state.drawerPinned} permanentAt='xl'
                 onOverlayClick={ this.toggleDrawerActive }>
-          
+            
             <NavLink to='/home' activeClassName={style.active}>Home</NavLink>
             <NavLink to='/posts' activeClassName={style.active}>Posts</NavLink>
-            <Devices />
+            <Devices {...this.props} />
       </NavDrawer>
       <Panel>
         <AppBar leftIcon='menu' onLeftIconClick={ this.toggleDrawerActive } theme={style} />
