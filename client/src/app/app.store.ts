@@ -18,7 +18,7 @@ export class AppStore {
   static instance: AppStore
   @observable username = 'Mr. User'
   apolloClient = new ApolloClient({
-    uri: `http://192.168.1.47:3001/graphql`
+    uri: `http://192.168.0.97:3001/graphql`
   })
 
   static getInstance() {

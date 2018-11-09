@@ -3,8 +3,9 @@ import { NavLink } from 'react-router-dom'
 import * as style from './app.css'
 import { Layout, NavDrawer, Panel, Sidebar } from 'react-toolbox/lib/layout';
 import { AppBar } from 'react-toolbox/lib/app_bar';
-import {Devices} from './devises/devices.component'
-
+import {Devices} from './devices/devices.component'
+import { inject } from 'mobx-react';
+@inject('devicesStore')
 export class App extends React.Component<any, any> {
 
   renderDevTool() {
@@ -14,12 +15,13 @@ export class App extends React.Component<any, any> {
     }
   }
   state = {
-    drawerActive: false,
+    drawerActive: true,
     drawerPinned: false,
     sidebarPinned: false
 };
 toggleDrawerActive = () => {
   this.setState({ drawerActive: !this.state.drawerActive });
+  
 };
 
 toggleDrawerPinned = () => {
@@ -37,14 +39,16 @@ toggleSidebar = () => {
                 onOverlayClick={ this.toggleDrawerActive }>
             
             <NavLink to='/home' activeClassName={style.active}>Home</NavLink>
-            <NavLink to='/posts' activeClassName={style.active}>Posts</NavLink>
+          
             <Devices {...this.props} />
       </NavDrawer>
       <Panel>
-        <AppBar leftIcon='menu' onLeftIconClick={ this.toggleDrawerActive } theme={style} />
+        <AppBar leftIcon='menu' onLeftIconClick={ this.toggleDrawerActive } className={style.appBar} >
+        <h1 style={{marginLeft: '10px'}}>MxBox&copy;	&ndash; OOO НТФ "Микроникс"</h1>
+        </AppBar> 
               <div style={{ flex: 1, overflowY: 'auto', padding: '1.8rem' }}>
               <div className={style.container}>
-                <h1>Shoutboard Application</h1>
+                
 
                 <div>
                   {this.props.children}

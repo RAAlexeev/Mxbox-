@@ -15,5 +15,6 @@ body {
 }
 
 .appBar{
-  --appbar-color:rgb(241, 191, 50)
+  --appbar-color:rgb(156, 37, 0);
+  --button-toggle-font-size:30px;
 }

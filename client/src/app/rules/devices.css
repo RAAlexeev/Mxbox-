@@ -3,6 +3,9 @@
   overflow: visible;
   padding: 0.5rem;
 }
+.activeCard{
+  background: red;
+}
 .cardTitle{
   --card-padding-lg:0;
   --card-padding:0;

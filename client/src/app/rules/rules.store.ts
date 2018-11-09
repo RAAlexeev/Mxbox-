@@ -2,7 +2,8 @@ import { observable, action } from 'mobx'
 import gql from 'graphql-tag'
 import { AppStore } from '../app.store'
 import { arrayRemove } from '../utils';
-
+import {Device} from '../devices/devices.store';
+import { Devices } from '../devices/devices.component';
 
 const DevicesQuery = gql`
   query DevicesQuery {
@@ -42,6 +43,7 @@ subscription DeviceSubscription($name: String!){
   }
 }
 `
+
 interface Sms{
   number:string[]
   text:string
@@ -51,10 +53,15 @@ interface Email{
   subj:string
   body?:string
 }
-interface Rule {
-  _id: string
-  name?: string
-  conditon?:string
+interface Trig{
+  type:number
+  condition?:string
+  sms?:Sms
+  email?:Email
+  cron?:string
+}
+export interface Rule {
+  trigs?:Trig[]
   smss?: Sms[]
   email?: Email[]
 }
@@ -89,27 +96,28 @@ export class RulesStore {
     //this.deviceSubscription.unsubscribe()
   }
 
-  async initializeRules(device) {
-/*     const result = await this.appStore.apolloClient.query<RulesQueryResult,{}>({
-      query: gql`query qRules{rules($device:ID"){enabled}}`,
-      variables:{},
+  async initializeRules(device:Device) {
+     const result = await this.appStore.apolloClient.query<RulesQueryResult,{}>({
+      query: gql`query rules($device:ID!){rules(device:$device){trigs{type}}}`,
+      variables:{device:device._id},
       fetchPolicy: 'network-only'
-    }) */
-    this.rules = []
-    //result.data.rules
+    }) 
+    //console.log(result.data.rules)
+    this.rules = result.data.rules
   }
-  async addRule() {
-/*      const result = await this.appStore.apolloClient.mutate<RulesQueryResult,{}>({
-      mutation: gql`mutation addRule`,
+  @action async addRule(device:Device) {
+      const result = await this.appStore.apolloClient.mutate<RulesQueryResult,{}>({
+      mutation: gql`mutation addRule($device:ID!){addRule(device:$device){status}}`,
+      variables:{device:device._id},
       fetchPolicy: 'no-cache'  
-    }) */
+    }) 
      
   
-    this.rules.push({_id:'1', name:"новое"})//result.data.addRule)
+    this.rules.push({trigs:[]})
   }
   async delRule(rule) {
     const result = await this.appStore.apolloClient.mutate<RulesQueryResult,{}>({
-      mutation: gql`mutation delDevice($_id:ID) { delDevice(_id:$_id){status}}`,
+      mutation: gql`mutation delDevice($_id:ID) { delDevice(_id:$){status}}`,
       variables:{ _id:rule._id },
       fetchPolicy: 'no-cache'  
     })
@@ -126,10 +134,7 @@ export class RulesStore {
     })
     
   }
-  nameOnChange(rule:Rule, rulesStore:RulesStore, value){
-    rule.name = value 
-    rulesStore.updDevice({_id:rule._id, name:rule.name})
- }
+
 
 
 }

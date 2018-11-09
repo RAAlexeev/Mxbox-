@@ -31,16 +31,16 @@ export class HomeComponent extends React.Component<HomeComponentProps, any> {
   render() {
     const { homeStore, appStore } = this.props
     return <div>
-      <h3>Dashboard</h3>
+      <h2>Конфигуратор системы оповещения и мониторинга</h2>
       <Input
         type='text'
-        label='Edit your name'
+        label=''
         name='username'
         value={appStore.username}
         onChange={appStore.onUsernameChange}
       />
-      <span>{homeStore.counterMessage}</span>
-      <button onClick={homeStore.increment}>Click!</button>
+  
+   
     </div>
   }
 }
