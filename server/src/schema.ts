@@ -66,7 +66,7 @@ import gql from 'graphql-tag'
     type Query {
       devices:[Device]
       rules(device:ID!):[Rule]
-      trigs(device:ID!,numRule:Int!):[Trig]
+      trigs(device:ID!,num:Int!):[Trig]
       device(id:ID!):Device
     }
     type Result{
@@ -79,7 +79,9 @@ import gql from 'graphql-tag'
       addRule(device:ID!):Result
       updRule(device:ID!,ruleInput:RuleInput!,num:Int!):Rule
       delRule(device:ID!,num:Int):Result
-      addTrig(device:ID!,trigInput:TrigInput!,numRule:Int!):Result
+      addTrig(device:ID!,trigInput:TrigInput!,RuleNum:Int!):Result
+      updTrig(device:ID!,ruleNum:Int!,num:Int!,trigInput:TrigInput):Result
+      delTrig(device:ID!,ruleNum:Int!,num:Int!):Result 
       addSms(rule:ID!):Sms
       addEmail(rule:ID!):Email
       updateSms(rule:ID!):Sms
@@ -87,8 +89,29 @@ import gql from 'graphql-tag'
 `);
 import * as Datastore from 'nedb';
 
-var db = new Datastore({filename : 'db.json'});
+export var db = new Datastore({filename : 'db'});
 db.loadDatabase();
+interface Sms{
+  number:string[]
+  text:string
+}
+interface Email{
+  addr:string
+  subj:string
+  body?:string
+}
+export interface Trig{
+  type:number
+  condition?:string
+  sms?:Sms
+  email?:Email
+  cron?:string
+}
+export interface Rule {
+  trigs?:Trig[]
+  smss?: Sms[]
+  email?: Email[]
+}
 // A map of functions which return data for the schema.
 /* interface DeviceInput{
   name
@@ -115,7 +138,7 @@ class Device implements DeviceInput{
  export const resolvers = {
   Query: {
     devices: (parent) => {
-      var callback = function(err,dev){ if( err ){ console.log(err); this.reject(err)} else this.resolve(dev) }         
+      var callback = function(err,dev){ if( err ){ console.log(err); this.reject(err.toString())} else this.resolve(dev) }         
       const p = new Promise((resolve,reject)=>{db.find( {}, callback.bind({resolve,reject}))})    
       return p.then().catch()   
     },
@@ -126,13 +149,15 @@ class Device implements DeviceInput{
     },  
     trigs:(parent, args)=>{
       var callback = function(err, dev){   /*console.log("callback(",dev,")"); */  if( err ){ console.log(err); this.reject(err)} else this.resolve(((dev[0]&&dev[0].rules)?dev[0].rules[this.numRule].trigs:[])) }         
-      const p = new Promise((resolve,reject)=>{db.find( {_id:args.device }, callback.bind({resolve,reject,numRule:args.numRule}))})    
+      const p = new Promise((resolve,reject)=>{db.find( {_id:args.device }, callback.bind({resolve,reject,num:args.num}))})    
       return p.then().catch()         
     }
   },
   Mutation:{
       addDevice(parent,args,context,info){
-            var callback = function( err, dev){ if( err ){ console.log(err); this.reject(err)} else this.resolve(dev) }         
+          
+            var callback = function( err, dev){ if( err ){ console.log(err); this.reject(err)} else this.resolve(dev) }  
+            if(!args.device.rules)  args.device.rules = []       
             const p = new Promise((resolve,reject)=>{db.insert( args.device, callback.bind({resolve,reject}))})    
             return p.then().catch()     
        },
@@ -151,8 +176,9 @@ class Device implements DeviceInput{
         const p = new Promise((resolve,reject)=>{db.update<void>({_id:args.device}, {$push:{rules:{enabled:false, trigs:[]}}},{}, callback.bind({resolve,reject}))})    
         return p.then().catch()    
       },
+
       updRule(parent,args,context,info){
-        var callback = function(err, device ){/* console.log("callback(",arguments,")"); */ if(err){ console.log(err); this.reject({status:err})} else this.resolve({status:device?'OK':'not found'}) }         
+        var callback = function(err, device ){/* console.log("callback(",arguments,")"); */ if(err){ console.log(err); this.reject({status:err})} else this.resolve({status:device?'OK':'not found'}) }      
         const p = new Promise((resolve,reject)=>{db.update<void>({_id:args.device}, args.ruleInput, {}, callback.bind({resolve,reject}))})    
         return p.then().catch()    
       },
@@ -161,7 +187,25 @@ class Device implements DeviceInput{
         const p = new Promise((resolve,reject)=>{db.remove({_id:args.device}, callback.bind({resolve,reject}))})    
         return p.then().catch()    
       },
+
+     
       addTrig(parent,args,context,info){
+        var callback = function(err, numberUpdated ){/* console.log("callback(",arguments,")"); */ if(err){ console.log(err.toString()); this.reject({status:err.toString()})} else this.resolve({status:'OK:'+numberUpdated}) }            
+        const p = new Promise((resolve,reject)=>{db.update<void>({_id:args.device}, {$push:{['rules.'+args.ruleNum+'.trigs']:args.trigInput}}, {}, callback.bind({resolve,reject}))})    
+        return p.then((v)=>v).catch((v)=>v)    
+      },
+      updTrig(parent,args,context,info){
+        var callback = function(err, numberUpdated ){/* console.log("callback(",arguments,")"); */ if(err){ console.log(err.toString()); this.reject({status:err.toString()})} else this.resolve({status:'OK:'+numberUpdated}) }            
+        const p = new Promise((resolve,reject)=>{db.update<void>({_id:args.device}, {$set:{['rules.'+args.ruleNum+'.trigs.'+ args.num]:args.trigInput}}, {}, callback.bind({resolve,reject}))})    
+        return p.then((v)=>v).catch((v)=>v)    
+      },
+      delTrig(parent,args,context,info){
+        var callback = function(err, numberUpdated ){/* console.log("callback(",arguments,")"); */ if(err){ console.log(err.toString()); this.reject({status:err.toString()})} else this.resolve({status:'OK:'+numberUpdated}) }            
+        const p = new Promise((resolve,reject)=>{db.update<void>({_id:args.device}, {$set:{['rules.'+args.ruleNum+'.trigs.'+ args.num]:undefined}}, {}, callback.bind({resolve,reject}))})    
+        return p.then((v)=>v).catch((v)=>v)    
+      }
+
+      /*       addTrig(parent,args,context,info){
         var callback = function(err, device){ 
           if(err) {
             console.log(err); this.reject({status:err.toString()})
@@ -191,7 +235,7 @@ class Device implements DeviceInput{
         //  db.update<void>({_id:args.device}, {$push:{rules:{enabled:false}}},{}, callback.bind({resolve,reject}))
         })    
         return p.then((v)=>v).catch((v)=>v)    
-      },
+      }, */
       
   }   
 }
