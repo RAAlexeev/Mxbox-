@@ -32,6 +32,7 @@ export class HomeComponent extends React.Component<HomeComponentProps, any> {
     const { homeStore, appStore } = this.props
     return <div>
       <h2>Конфигуратор системы оповещения и мониторинга</h2>
+      <p>предназначен для конфигурирования серверной части системы</p>
       <Input
         type='text'
         label=''

@@ -26,6 +26,7 @@ mutation addDevice{
 }
 `
 const DevicesSubscription = gql`
+
 subscription DeviceSubscription($name: String!){
   Post(filter: {
     mutation_in: [CREATED],
@@ -49,6 +50,7 @@ export interface Device {
   mb_addr?: number
   ip_addr?: string
   rules?: Array<Rule> 
+  error?:string
 }
 
 interface DevicesQueryResult {
@@ -65,26 +67,35 @@ export class DevicesStore {
   @observable devices: Array<Device> = []
   @observable selected: Device
    
-  @observable isEdit:boolean
+  @observable isEdit:boolean = false
+  @observable deviceSubscription: ZenObservable.Subscription;
   constructor() {
     let self = this
     this.appStore = AppStore.getInstance()
     this.isEdit = false
     this.initializeDevices()
-/*      this.deviceSubscription = this.appStore.apolloClient.subscribe({
-      query: DevicesSubscription,
+
+      this.deviceSubscription = this.appStore.apolloClient.subscribe({
+      query: gql`subscription onDeviceLinkState{
+        deviceLinkState{
+          _id
+          linkState
+        }
+      }`,
       // This way realtime updates will work only when both posting and reading users have the same name. Proof of concept.
-      variables: { name: this.appStore.username }
+      variables: { }
     }).subscribe({
       next(data) {
-        self.devices.unshift(data.Post.node)
+       const index = DevicesStore.getInstance().devices.findIndex((device,index)=>device._id === data._id)
+       console.log(index,data.data.deviceLinkState)
+       if(index >= 0) DevicesStore.getInstance().devices[index] = {...DevicesStore.getInstance().devices[index], error:data.data.deviceLinkState}
       },
       error(err) { console.error('err', err) },
-    }) */
+    }) 
   } 
 
   destructor() {
-    //this.deviceSubscription.unsubscribe()
+    this.deviceSubscription.unsubscribe()
   }
   static getInstance() {
     return DevicesStore.instance || (DevicesStore.instance = new DevicesStore() )
@@ -93,11 +104,10 @@ export class DevicesStore {
     try{
     const result = await this.appStore.apolloClient.query<DevicesQueryResult,{}>({
       query: DevicesQuery,
-      
       fetchPolicy: 'network-only'
     })    
     this.devices = result.data.devices
-    //this.select(this.devices[0]);
+  
   }catch(err){
     console.log(err.message)
   }
@@ -121,6 +131,7 @@ export class DevicesStore {
     })
     
     arrayRemove.call(this.devices, this.devices.indexOf(device))
+    if(!this.devices.length) this.selected = null
   }
 
   async updDevice(value) {
@@ -140,7 +151,7 @@ export class DevicesStore {
  // if (!value.search(/\d+/g))  return;
   if(value){
    // console.log(value)
-  device.mb_addr = parseInt(value.replace(/[^\d]*/g,'')) ;
+  device.mb_addr = parseInt(value.replace(/[^\d]+/g,'')) ;
   //device.ip_addr = value.match(/(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)/g)
   }else
   device.mb_addr = 0
@@ -180,7 +191,7 @@ ip_addrOnChange(device:Device,deviceStore:DevicesStore,value){
 @action select = (device:Device) => {
   if(this.selected != device){
     //console.log(this.rulesStore)
-    this.isEdit = false;
+   this.isEdit = true;
   if(this.rulesStore)
   //  try{
       this.rulesStore.initializeRules(device)
@@ -190,6 +201,7 @@ ip_addrOnChange(device:Device,deviceStore:DevicesStore,value){
   }
   this.selected = device
 }
+
 }
 
 

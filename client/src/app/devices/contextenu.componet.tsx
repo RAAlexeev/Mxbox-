@@ -17,7 +17,7 @@ export const ContextMenu = (devicesStore,device) =>
         type='text'
         name='ame'
         disabled = {!(devicesStore.isEdit && devicesStore.selected === device)}
-        error={'нет связи'}
+        error={device.error?device.error:''}
         value={device.name}
         maxLength={25}        
         onChange={devicesStore.nameOnChange.bind(this, device, devicesStore)}

@@ -2,16 +2,16 @@ import { observable, action } from 'mobx'
 import ApolloClient from "apollo-boost";
 import { SubscriptionClient  } from 'subscriptions-transport-ws'
 
-/* const PROJECT_ID = 'cj3bf7docbo5w0147sj4e66ik'
 
-const wsClient = new SubscriptionClient(`wss://192.168.1.47/graphl`, {
+
+const wsClient = new SubscriptionClient(`ws://192.168.0.97/graphql/subscriptions`, {
   reconnect: true,
   connectionParams: {
     // Pass any arguments you want for initialization
   } 
 })
 
-*/
+
 
 
 export class AppStore {

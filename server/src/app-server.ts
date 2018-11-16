@@ -1,6 +1,10 @@
 const express = require('express');
 const app = express();
 import {appolo} from './index'
+import { run as modbusTestRun } from './tests.devices/modbus.test';
+
+
+
 appolo.applyMiddleware({app});
 app.use('/', express.static('/home/Raa/workspace/Mxbox/client/dist'));
 app.get('/*', function(req, res){
@@ -19,5 +23,5 @@ app.get('/*', function(req, res){
   const port = server.address().port;
   console.log('App listening at http://%s:%s$', host, port);
 })  
-
+modbusTestRun()
 export {server};

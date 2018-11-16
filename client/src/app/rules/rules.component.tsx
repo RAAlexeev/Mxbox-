@@ -12,7 +12,12 @@ import { ContextMenu } from './contextenu.componet';
 import { Input } from 'react-toolbox/lib/input'
 import { DevicesStore } from '../devices/devices.store';
 import { Trigs } from './trigs/trigs.component';
-
+import { TrigsStore } from './trigs/trigs.store';
+import { CodeDialog } from './dialogs/code.dialog';
+import { EmailDialog } from './dialogs/email.dialog';
+import {Acts} from './acts/acts.component'
+import { ActsStore } from './acts/acts.store';
+import { SmsDialog } from './dialogs/sms.dialog';
 
 
 
@@ -56,35 +61,37 @@ interface RulesComponentProps {
 
 @inject('appStore','rulesStore','devicesStore')
 @observer
-export class RulesComponent extends React.Component<RulesComponentProps, any> { 
+export class RulesComponent extends React.Component<RulesComponentProps, any> {
+  codeDialog:CodeDialog; 
+  emailDialog:EmailDialog;
+  smsDialog:SmsDialog;
+  //onRef: React.RefObject<{}>;
+  
    render() {
-    let i = 0 ;
-   
-    
+  
     const { rulesStore, appStore, devicesStore } = this.props 
    
     const { name } = this.props.match.params
   
-     return  !devicesStore.selected?<Redirect to='/home' />:<div>
-       
-        <Button icon='add' onClick={rulesStore.addRule.bind(rulesStore,devicesStore.selected)} floating accent mini className={appStyle.floatRight} />
+     return !devicesStore.selected?<Redirect to='/home' />:<div>
+        <CodeDialog onRef={instance => { this.codeDialog = instance }} />  
+        <EmailDialog onRef={instance => { this.emailDialog = instance }} />  
+        <SmsDialog onRef={instance => { this.smsDialog = instance }} />  
+        <Button icon='add' onClick={rulesStore.addRule.bind(rulesStore, devicesStore.selected)} floating accent mini className={appStyle.floatRight} />
         <h2>{'Правила для: '+ devicesStore.selected.name}</h2>
-        {rulesStore.rules.map((rule,index) =>
+        {rulesStore.rules.map((rule,index) =>rule?
        
-        <Card key={index} className={style.messageCard} >
-       
-         
-          <CardTitle className ={style.cardTitle}
-            title={ '#' + index  }
-            subtitle=''/>            
-           
-        <CardText> 
-         <h3>Тригер:</h3> { Trigs(rulesStore,rule) } 
-        </CardText>
-         
-        </Card>
-        
-        )}
+          <Card key={index} className={style.messageCard}>
+         <h3 style={{marginBottom:'5px'}}>{'#' + index} <Button icon='delete' onClick={rulesStore.delRule.bind(rulesStore, devicesStore.selected,index)} floating  mini className={appStyle.floatRight} /></h3> 
+            <CardTitle className ={style.cardTitle}
+              
+              subtitle=''/>            
+            <CardText> 
+            <h3>События: { Trigs(new TrigsStore(rule, index, {codeDialog: this.codeDialog})) }</h3> 
+            <h3>Действия: { Acts(new ActsStore(rule, index, {emailDialog: this.emailDialog,smsDialog: this.smsDialog})) } </h3> 
+            </CardText>
+          </Card>      
+        :'')}
     </div>
   }
 }

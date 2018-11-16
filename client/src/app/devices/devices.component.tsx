@@ -54,7 +54,7 @@ export class DevicesComponent extends React.Component<DevicesComponentProps, any
      <Navigation type='vertical'>
       {devicesStore.devices.map(device =>
         <NavLink key={device._id} to={`/rules/${device.name}/${device._id}`} activeClassName={style.active} isActive={(_, { pathname }) =>{ return pathname === `/rules/${device.name}/:${device._id}`}}>
-          <Card    onClick={devicesStore.select.bind(devicesStore ,device)} className={style.messageCard +  ((devicesStore.selected === device)?(' '+style.activeCard):'')} >
+          <Card    onClick={devicesStore.select.bind(devicesStore ,device)} className={style.messageCard +  ((devicesStore.selected === device)?(' '+ style.activeCard):'')} >
             <CardTitle className ={style.cardTitle}
             title={ ContextMenu( devicesStore, device ) }
             subtitle=''/>  
@@ -80,7 +80,7 @@ export class DevicesComponent extends React.Component<DevicesComponentProps, any
                
               //error={devicesStore.title.error}
                value={device.ip_addr?device.ip_addr:''}
-               maxLength={15} 
+               maxLength={20} 
                onChange={devicesStore.ip_addrOnChange.bind(this, device, devicesStore)}
               />
               </div>

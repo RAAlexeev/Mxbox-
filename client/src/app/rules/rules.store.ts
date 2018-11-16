@@ -2,8 +2,10 @@ import { observable, action } from 'mobx'
 import gql from 'graphql-tag'
 import { AppStore } from '../app.store'
 import { arrayRemove } from '../utils';
-import {Device} from '../devices/devices.store';
+import {Device, DevicesStore} from '../devices/devices.store';
 import { Devices } from '../devices/devices.component';
+import { Trig } from './trigs/trigs.store';
+import{Act} from './acts/acts.store'
 
 const DevicesQuery = gql`
   query DevicesQuery {
@@ -44,26 +46,19 @@ subscription DeviceSubscription($name: String!){
 }
 `
 
-interface Sms{
+export interface Sms{
   number:string[]
   text:string
 }
-interface Email{
-  addr:string
-  subj:string
+export interface Email{
+  address:string
+  subject:string
   body?:string
 }
-interface Trig{
-  type:number
-  condition?:string
-  sms?:Sms
-  email?:Email
-  cron?:string
-}
+
 export interface Rule {
-  trigs?:Trig[]
-  smss?: Sms[]
-  email?: Email[]
+  trigs?:Array<Trig>
+  acts?:Array<Act>
 }
 
 interface RulesQueryResult {
@@ -73,6 +68,7 @@ interface RulesQueryResult {
 
 export class RulesStore {
   appStore: AppStore
+  devicesStore:DevicesStore
  // deviceSubscription
 
   @observable rules: Array<Rule> = []
@@ -80,6 +76,7 @@ export class RulesStore {
   constructor() {
     let self = this
     this.appStore = AppStore.getInstance()
+    this.devicesStore = DevicesStore.getInstance()
 /*      this.deviceSubscription = this.appStore.apolloClient.subscribe({
       query: DevicesSubscription,
       // This way realtime updates will work only when both posting and reading users have the same name. Proof of concept.
@@ -98,11 +95,14 @@ export class RulesStore {
 
   async initializeRules(device:Device) {
      const result = await this.appStore.apolloClient.query<RulesQueryResult,{}>({
-      query: gql`query rules($device:ID!){rules(device:$device){trigs{type}}}`,
+      query: gql`query rules($device:ID!){rules(device:$device){acts{type sms{numbers text} 
+                                                                email{address subject body}} 
+                                                                trigs{type condition inEmail{subject body}  
+                                                                inSms{numbers text} cron}}}`,
       variables:{device:device._id},
       fetchPolicy: 'network-only'
     }) 
-    //console.log(result.data.rules)
+    console.log(result.data.rules)
     this.rules = result.data.rules
   }
   @action async addRule(device:Device) {
@@ -111,29 +111,20 @@ export class RulesStore {
       variables:{device:device._id},
       fetchPolicy: 'no-cache'  
     }) 
-     
-  
-    this.rules.push({trigs:[]})
+    this.rules.push({trigs:[],acts:[]})
   }
-  async delRule(rule) {
+  @action async delRule(rule, ruleNum) {
     const result = await this.appStore.apolloClient.mutate<RulesQueryResult,{}>({
-      mutation: gql`mutation delDevice($_id:ID) { delDevice(_id:$){status}}`,
-      variables:{ _id:rule._id },
+      mutation: gql`mutation delRule($device:ID!,$ruleNum:Int!){ delRule(device:$device,ruleNum:$ruleNum){status} }`,
+      variables:{ device:rule._id,
+                  ruleNum:ruleNum },
       fetchPolicy: 'no-cache'  
     })
     
     arrayRemove.call(this.rules, this.rules.indexOf(rule))
   }
 
-  async updDevice(value) {
-    const result = await this.appStore.apolloClient.mutate<RulesQueryResult,{}>({
-      mutation: gql`mutation updDevice($deviceInput:DeviceInput!) { updDevice(deviceInput:$deviceInput){status}}`,
-      
-      variables:{ deviceInput:value },
-      fetchPolicy: 'no-cache'  
-    })
-    
-  }
+
 
 
 

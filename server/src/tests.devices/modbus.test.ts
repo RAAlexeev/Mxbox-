@@ -1,10 +1,12 @@
 import node_modbus from 'node-modbus'
-import {db} from '../schema' 
+import {db, pubsub, LINK_STATE_CHENG} from '../schema' 
+
+export const run = ()=>{
 setInterval(()=> 
     db.find({'rules.trigs.type':0}
             ,(err,devices:Device[])=>{
                         const time_interval = 1000*60
-                        let intervals:NodeJS.Timeout[]=[] 
+                        let intervals:any[]=[] 
                             intervals.forEach(interval =>{clearInterval(interval)})
                             intervals=[]      
                             if(!err)  
@@ -20,13 +22,15 @@ setInterval(()=>
                                         'logLevel': 'debug', /* for less log use: info, warn or error */
                                         'logEnabled': true
                                     })
+                                    pubsub.publish(LINK_STATE_CHENG, { deviceLinkState:{ device:device, state:'нет связи' }  });
                                     client.connect()
-                                    client.on('connect', function () {
-                                            intervals.push(setInterval( function () {
+                                    client.on( 'connect', function () {
+                                        pubsub.publish(LINK_STATE_CHENG, { deviceLinkState:{ device:device, state:'' }  });
+                                            intervals.push(  setInterval( function () {
                                                                             TestDevicesModbus.testTrigs(device,client) 
                                                                             // client.readCoils(0, 13).then((response) => console.log(response.payload))
                                                                             //}, time_interval) /* reading coils every second */
-                                                                        }, time_interval) 
+                                                                        }, time_interval ) 
                                             )       
                                     })
                                 
@@ -34,7 +38,7 @@ setInterval(()=>
                             else console.error(err.toString())
                         
                         })
-,1000*60*10)
+,1000*30)}
 
 interface Sms{
     number:string[]
@@ -97,8 +101,9 @@ class TestDevicesModbus {
             return regs
     }
 
-    private static modbusError(res){
-            console.error(res)
+    private static modbusError(err,device){
+        pubsub.publish(LINK_STATE_CHENG, { deviceLinkState:{ device:device, state:err.toString() }  });
+            console.error(err.toString())
     }
     private static onTrig(rule:Rule){
     
@@ -156,16 +161,16 @@ class TestDevicesModbus {
                                 trig.regs.forEach(reg=>{
                                     switch(reg.func){                                    
                                         case 1: client.readCoils(reg.addr,1)
-                                                        .then(resp=>{this.processResponse(resp, reg)},resp=>this.modbusError.bind(resp) )
+                                                        .then(resp=>{this.processResponse(resp, reg)},resp=>this.modbusError.bind(this,resp,device) )
                                         break 
                                         case 1: client.readCoils(reg.addr,1)
-                                                        .then(resp=>{this.processResponse(resp, reg)},resp=>this.modbusError.bind(resp) )
+                                                        .then(resp=>{this.processResponse(resp, reg)},resp=>this.modbusError.bind(this,resp,device) )
                                         break
                                         case 3: client.readHoldingRegisters(reg.addr, this.getSizeDataReguest(reg))
-                                                        .then(resp=>{this.processResponse(resp,reg)}, res=>this.modbusError.bind(res)  )
+                                                        .then(resp=>{this.processResponse(resp,reg)}, resp=>this.modbusError.bind(this,resp,device)  )
                                         break
                                         case 4: client.readInputRegisters(reg.addr, 1)
-                                                        .then(resp=>{this.processResponse(resp, reg)},resp=>this.modbusError.bind(resp) ) 
+                                                        .then(resp=>{this.processResponse(resp, reg)},resp=>this.modbusError.bind(this, resp,device ) ) 
                                         break 
                                         default: console.error('Неподдержаная функция модбаса или парсер не распарсил!')                                            
                                     }

@@ -20,5 +20,4 @@ export const ContextMenu = (devicesStore,device) =><div>
         maxLength={25}        
         onChange={devicesStore.nameOnChange.bind(this, device, devicesStore)}
       />
-
  </div>

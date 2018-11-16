@@ -1,9 +1,9 @@
-import { observable, action } from 'mobx'
 import gql from 'graphql-tag'
 import { AppStore } from '../../app.store'
 import { arrayRemove } from '../../utils';
 import { Device, DevicesStore } from '../../devices/devices.store';
 import { Rule } from '../rules.store';
+import { observable, action } from 'mobx';
 
 
 
@@ -26,43 +26,41 @@ subscription DeviceSubscription($name: String!){
   }
 }
 `
-export interface Trig{
-  __typename: any;
-  type:number
-  condition?:string
-  sms?:Sms
-  email?:Email
-  cron?:string
-}
+
 interface Sms{
-  number:string[]
+  numbers:string[]
   text:string
 }
 interface Email{
-  addr:string
-  subj:string
+  address:string
+  subject:string
   body?:string
 }
-
+export interface Act{
+  type?:number
+  sms?:Sms
+  email?:Email
+  index?:number
+}
 
 interface RulesQueryResult {
-  trigs?: Array<Trig>
   rule?:Rule
 }
 
-export class TrigsStore {
+
+export class ActsStore {
   appStore:AppStore = AppStore.getInstance()
   devicesStore:DevicesStore = DevicesStore.getInstance()
  // deviceSubscription
   dialogs
   ruleNum:number
   rule:Rule
-  @observable trigs: Array<Trig> = []
+  @observable acts: Array<Act>=[]
 
   constructor(rule:Rule, ruleNum:number, dialogs) {
     let self = this
     this.ruleNum = ruleNum
-    this.trigs = rule.trigs
+    this.acts = rule.acts
     this.rule = rule
     this.dialogs = dialogs
 /*      this.deviceSubscription = this.appStore.apolloClient.subscribe({
@@ -83,56 +81,81 @@ export class TrigsStore {
 
  
   
-  @action  addTrig = async (trig:Trig)=>{
+  @action addAct = async (act:Act)=>{
     try{
     const result = await this.appStore.apolloClient.mutate<RulesQueryResult,{}>({
-      mutation: gql`mutation addTrig($device:ID!,$ruleNum:Int!,$trigInput:TrigInput!){addTrig(device:$device,ruleNum:$ruleNum,trigInput:$trigInput){status}}`,
+      mutation: gql`mutation addAct($device:ID!,$ruleNum:Int!,$actInput:ActInput!){addAct(device:$device,ruleNum:$ruleNum,actInput:$actInput){status}}`,
       variables:{
         device:this.devicesStore.selected._id,
         ruleNum:this.ruleNum,
-        trigInput:trig
+        actInput:act
       },
       fetchPolicy: 'no-cache'  
     }) 
-    this.rule.trigs.push(trig)
+    this.acts.push(act)
     }catch(err){
       console.error(err.toString())
     }
   }
-  @action updTrig = async (trig:Trig)=>{
-   let index = this.trigs.findIndex((val,index)=>(val===trig))
-   if(index >= 0)
+  @action updActEmail = async (act:Act)=>{
+  // let index = this.acts.findIndex((val,index)=>(val===act))
+
    try{
     
       const result = await this.appStore.apolloClient.mutate<RulesQueryResult,{}>({
-      mutation: gql`mutation updTrig($device:ID!,$ruleNum:Int!,$trigNum:Int!,$trigInput:TrigInput!){updTrig(device:$device,ruleNum:$ruleNum,trigNum:$trigNum,trigInput:$trigInput){status}}`,
+      mutation: gql`mutation updAct($device:ID!,$ruleNum:Int!,$actNum:Int!,$actInput:ActInput!){updAct(device:$device,ruleNum:$ruleNum,actNum:$actNum,actInput:$actInput){ type email{address subject body} sms{numbers text}}}`,
       variables:{
         device:this.devicesStore.selected._id,
         ruleNum:this.ruleNum,
-        trigNum:index,
-        trigInput:{type:0,condition:trig.condition}
+        actNum:act.index,
+        actInput:{type:act.type, email:{address:act.email.address,subject:act.email.subject,body:act.email.body}}
       },
       fetchPolicy: 'no-cache'  
     })
-    this.trigs[index] = null
-    this.trigs[index] = trig
+    console.log(result.data)
+    this.acts[act.index] = result.data.updAct
+  
+    return true 
     }catch(err){
       console.error(err.toString())
       return false
     }
   }
-  @action  delTrig = async (trigNum:number)=>{
+  @action updActSms = async (act:Act)=>{
+    // let index = this.acts.findIndex((val,index)=>(val===act))
+  
+     try{
+        const result = await this.appStore.apolloClient.mutate<RulesQueryResult,{}>({
+        mutation: gql`mutation updAct($device:ID!,$ruleNum:Int!,$actNum:Int!,$actInput:ActInput!){updAct(device:$device,ruleNum:$ruleNum,actNum:$actNum,actInput:$actInput){ type email{address subject body} sms{numbers text}}}`,
+        variables:{
+          device:this.devicesStore.selected._id,
+          ruleNum:this.ruleNum,
+          actNum:act.index,
+          actInput:{type:act.type, sms:{numbers:act.sms.numbers,text:act.sms.text}}
+        },
+        fetchPolicy: 'no-cache'  
+      })
+      console.log(result.data,act.index)
+      this.acts[act.index] = result.data.updAct
+    
+      return true 
+      }catch(err){
+        console.error(err.toString())
+        return false
+      }
+    }
+  @action  delAct = async (actNum:number)=>{
     try{
     const result = await this.appStore.apolloClient.mutate<RulesQueryResult,{}>({
-      mutation: gql`mutation delTrig($device:ID!,$ruleNum:Int!,$trigNum:Int!){delTrig(device:$device,ruleNum:$ruleNum,trigNum:$trigNum){status}}`,
+      mutation: gql`mutation delAct($device:ID!,$ruleNum:Int!,$actNum:Int!){delAct(device:$device,ruleNum:$ruleNum,actNum:$actNum){status}}`,
       variables:{
         device:this.devicesStore.selected._id,
         ruleNum:this.ruleNum,
-        trigNum:trigNum
+        actNum:actNum
       },
       fetchPolicy: 'no-cache'  
     }) 
-    this.rule.trigs[trigNum] = null
+    this.rule.acts[actNum] = null
     }catch(err){
       console.error(err.toString())
     }
