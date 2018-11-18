@@ -21,13 +21,13 @@ export class SmsDialog extends React.Component<any> {
     this.upd = upd
   
     this.obj = obj
-    this.setState({...this.state, numbers:[], text:'', error:''})
+   
     if(obj){
       if(!obj.sms) obj.sms = {numbers:[''],text:''}
       if(!obj.sms.numbers) obj.sms = {numbers:[''],text:''}
       this.setState({...this.state,numbers:obj.sms.numbers,text:obj.sms.text})
-    }
-    console.log(this.obj)
+    }else  this.setState({...this.state, numbers:[], text:'', error:''})
+    //console.log(this.obj)
     this.setState({active:!this.state.active});
   }
 
@@ -88,10 +88,12 @@ export class SmsDialog extends React.Component<any> {
           )}
           {this.state.numbers[this.state.numbers.length-1]!=''?<Button icon='add' onClick={this.handleAddNumber.bind(this)} floating  mini  />:''}
          
-         <Input type='text' multiline rows={5} error={this.state.error} hint='Здесь вы  также можете вставлять ссылки на modbus адреса в квадратных скобках [03 12], [12f](p.s. и в теме тоже)'
+         <Input type='text' multiline rows={5} error={this.state.error} hint='Здесь вы  также можете вставлять ссылки на modbus адреса в квадратных скобках [03 12], [12f] [1]'
            icon='message' value={this.state.text} onChange={this.handleChange.bind(this,'text') } maxLength={70}/>
         </Dialog>
       </div>
     )
   }
 }
+
+

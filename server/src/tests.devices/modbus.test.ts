@@ -12,8 +12,8 @@ setInterval(()=>
                             if(!err)  
                                 devices.forEach(device => {
                                     let client = node_modbus.client.tcp.complete({
-                                        'host': 'localhost', /* IP or name of server host */
-                                        'port': 502, /* well known Modbus port */
+                                        'host': device.ip_addr?device.ip_addr.replace(/:\d+/g,''):'localhost', /* IP or name of server host */
+                                        'port': device.ip_addr?device.ip_addr.replace(/.*:/g,''):'501', /* well known Modbus port */
                                         'unitId': device.mb_addr, 
                                         'timeout': 2000, /* 2 sec */
                                         'autoReconnect': true, /* reconnect on connection is lost */
@@ -22,10 +22,10 @@ setInterval(()=>
                                         'logLevel': 'debug', /* for less log use: info, warn or error */
                                         'logEnabled': true
                                     })
-                                    pubsub.publish(LINK_STATE_CHENG, { deviceLinkState:{ device:device, state:'нет связи' }  });
+                                    pubsub.publish(LINK_STATE_CHENG, { deviceLinkState:{ _id:device._id, state:'нет соединения' }  });
                                     client.connect()
                                     client.on( 'connect', function () {
-                                        pubsub.publish(LINK_STATE_CHENG, { deviceLinkState:{ device:device, state:'' }  });
+                                        pubsub.publish(LINK_STATE_CHENG, { deviceLinkState:{ _id:device._id, state:'' }  });
                                             intervals.push(  setInterval( function () {
                                                                             TestDevicesModbus.testTrigs(device,client) 
                                                                             // client.readCoils(0, 13).then((response) => console.log(response.payload))

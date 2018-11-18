@@ -1,12 +1,11 @@
-import { ApolloServer} from 'apollo-server-express';
-import { typeDefs, resolvers } from './schema';
+import { ApolloServer } from 'apollo-server-express';
+import { schema } from './schema';
 
  export const appolo = new ApolloServer({
     // These will be defined for both new or existing servers
-    typeDefs,
-    resolvers,
+    schema:schema,
     subscriptions: {
-      path:':3001' ,
+      
       onConnect: (connectionParams, webSocket) => {
       
         //if (connectionParams.authToken) {

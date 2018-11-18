@@ -6,6 +6,8 @@ import {Device, DevicesStore} from '../devices/devices.store';
 import { Devices } from '../devices/devices.component';
 import { Trig } from './trigs/trigs.store';
 import{Act} from './acts/acts.store'
+import Snackbar from 'react-toolbox/lib/snackbar';
+import { App } from '../app.component';
 
 const DevicesQuery = gql`
   query DevicesQuery {
@@ -94,7 +96,8 @@ export class RulesStore {
   }
 
   async initializeRules(device:Device) {
-     const result = await this.appStore.apolloClient.query<RulesQueryResult,{}>({
+      try{ const result = await this.appStore.apolloClient.query<RulesQueryResult,{}>({
+     
       query: gql`query rules($device:ID!){rules(device:$device){acts{type sms{numbers text} 
                                                                 email{address subject body}} 
                                                                 trigs{type condition inEmail{subject body}  
@@ -102,8 +105,13 @@ export class RulesStore {
       variables:{device:device._id},
       fetchPolicy: 'network-only'
     }) 
-    console.log(result.data.rules)
+   // console.log(result.data.rules)
     this.rules = result.data.rules
+  }catch(err){
+   //const snackbar:Snackbar = (this.appStore.appComponent.refs.app as App).refs.snackbar as Snackbar
+  // snackbar.setState({...snackbar.state, active:true})
+  }
+
   }
   @action async addRule(device:Device) {
       const result = await this.appStore.apolloClient.mutate<RulesQueryResult,{}>({

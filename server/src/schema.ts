@@ -72,10 +72,11 @@ import gql from 'graphql-tag'
       name:String
       mb_addr:Int
       ip_addr:String
+      rules:[RuleInput]
     }
     type  DeviceLinkState{
       _id:ID
-      linkState:String
+      state:String
     }
     type Subscription {
       deviceLinkState:DeviceLinkState
@@ -155,8 +156,7 @@ class Device implements DeviceInput{
 } */
 //import * as util from 'util'
 
- import  { PubSub } from 'apollo-server-express'
-import { GraphQLSchema } from 'graphql';
+ import  { PubSub, makeExecutableSchema } from 'apollo-server-express'
  export const LINK_STATE_CHENG = 'LINK_STATE_CHENG' 
  export const pubsub = new PubSub();
  export const resolvers = {
@@ -285,3 +285,7 @@ import { GraphQLSchema } from 'graphql';
       
   }   
 }
+export const schema = makeExecutableSchema({
+  typeDefs,
+  resolvers,
+});

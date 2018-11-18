@@ -112,7 +112,7 @@ export class ActsStore {
       },
       fetchPolicy: 'no-cache'  
     })
-    console.log(result.data)
+    //console.log(result.data)
     this.acts[act.index] = result.data.updAct
   
     return true 
@@ -135,7 +135,7 @@ export class ActsStore {
         },
         fetchPolicy: 'no-cache'  
       })
-      console.log(result.data,act.index)
+     // console.log(result.data,act.index)
       this.acts[act.index] = result.data.updAct
     
       return true 

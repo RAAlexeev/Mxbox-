@@ -1,8 +1,8 @@
 {
-  "name": "typescript-react-mobx-boilerplate",
+  "name": "mxbox",
   "version": "1.0.0",
   "private": true,
-  "description": "A frontend boilerplate with React, MobX and Typescript",
+  "description": "r.a.alexeev@gmail.com",
   "main": "index.ts",
   "scripts": {
     "toolbox": "react-toolbox-themr",
@@ -12,7 +12,7 @@
     "build": "webpack --display-error-details --progress",
     "postinstall": "npm build"
   },
-  "license": "MIT",
+  "license": "",
   "--сonfig": "./react-toolbox-themr.json",
   "devDependencies": {
     "@types/classnames": "^2.0.32",

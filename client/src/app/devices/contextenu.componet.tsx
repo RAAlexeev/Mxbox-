@@ -4,8 +4,7 @@ import * as style from './devices.css';
 import { Input } from 'react-toolbox/lib/input'
 
 
-export const ContextMenu = (devicesStore,device) =>
-<span>
+export const ContextMenu = (devicesStore,device) =><div>
   <IconMenu  theme={style}  icon='more_vert' position='topLeft' menuRipple>
     <MenuItem onClick={()=>(devicesStore.isEdit = true)} value='edit' icon='edit' caption='Изменить' />
    <MenuDivider />
@@ -22,4 +21,4 @@ export const ContextMenu = (devicesStore,device) =>
         maxLength={25}        
         onChange={devicesStore.nameOnChange.bind(this, device, devicesStore)}
       />
-</span>
+</div>

@@ -16,15 +16,10 @@ const DevicesQuery = gql`
   }
 `
 const addDevice = gql`
-mutation addDevice{
-  addDevice(device:{name:"новый"}){
-    _id,
-    name
-  }
-  
-  
-}
-`
+mutation addDevice($mb_addr:Int){
+  addDevice(device:{name:"Новое", ip_addr:"127.0.0.1:501", mb_addr:$mb_addr}){
+    _id, name,  ip_addr, mb_addr
+  }}`
 const DevicesSubscription = gql`
 
 subscription DeviceSubscription($name: String!){
@@ -79,16 +74,16 @@ export class DevicesStore {
       query: gql`subscription onDeviceLinkState{
         deviceLinkState{
           _id
-          linkState
+          state
         }
       }`,
       // This way realtime updates will work only when both posting and reading users have the same name. Proof of concept.
       variables: { }
     }).subscribe({
       next(data) {
-       const index = DevicesStore.getInstance().devices.findIndex((device,index)=>device._id === data._id)
-       console.log(index,data.data.deviceLinkState)
-       if(index >= 0) DevicesStore.getInstance().devices[index] = {...DevicesStore.getInstance().devices[index], error:data.data.deviceLinkState}
+    ///   console.log(this.data)
+       const index = DevicesStore.getInstance().devices.findIndex( (device,index,devices)=>device._id === data.data.deviceLinkState._id )
+       if(index >= 0) DevicesStore.getInstance().devices[index] = {...DevicesStore.getInstance().devices[index], error:data.data.deviceLinkState.state}
       },
       error(err) { console.error('err', err) },
     }) 
@@ -117,9 +112,12 @@ export class DevicesStore {
   async addDevice() {
      const result = await this.appStore.apolloClient.mutate<DevicesQueryResult,{}>({
       mutation: addDevice,
+      variables:{
+        mb_addr:((this.devices.length&&this.devices[this.devices.length-1].mb_addr)?this.devices[this.devices.length-1].mb_addr+1:'1')
+      },
       fetchPolicy: 'no-cache'  
     })
-   console.log(result.data)  
+    
   
     this.devices.push(result.data.addDevice)
   }
@@ -161,9 +159,11 @@ export class DevicesStore {
 
 
 ip_addrOnChange(device:Device,deviceStore:DevicesStore,value){
+  const port:string[] = value.split(':')
+  console.log( port )
 
-   let val = value.replace(/[^\d.]*/g,'').replace(/(\d{3})[^\.]?/g,'$1\.').replace(/\.+/g,'.')
-  
+   let val = value.replace(/:+\d+/g,'').replace(/:/g,'').replace(/[^\d^\.]/g,'').replace(/[^\d\.]+/g,'').replace(/(\d{3})/g,'$1\.').replace(/\.+/g,'.')
+     
       if(val.length > 0) 
       {     
         var ip = val.split('.')
@@ -176,11 +176,11 @@ ip_addrOnChange(device:Device,deviceStore:DevicesStore,value){
            if((ip[i].length < 3 && ip[i+1] != undefined)||!ip[i].length) val += '.' 
           //if(i > 0 && ip[i].length > 2 )ip[i]='.'+ip[i]
         }
-       // if(ip.length < 4  ) ip.push('.')
+       // if(ip.length < 4  ) ip.push('.') 
       }
 
     //  console.log(ip)
-    device.ip_addr =val.replace(/\.+/g,'.')// ip?(ip[0]+(ip[1]||ip[1].isEmpty?'.'+ip[1]:'')+(ip[2]?ip[2]:'') + (ip[3]?ip[3]:'')):val//value.replace(/[^\d,.]*/g,'').replace(/(\d{3})\d+/g,'$1\.');
+    device.ip_addr =val.replace(/\.+/g,'.')+((port.length>1)?port[port.length-1]?':'+port[port.length-1]:':':'')// ip?(ip[0]+(ip[1]||ip[1].isEmpty?'.'+ip[1]:'')+(ip[2]?ip[2]:'') + (ip[3]?ip[3]:'')):val//value.replace(/[^\d,.]*/g,'').replace(/(\d{3})\d+/g,'$1\.');
     deviceStore.updDevice({_id:device._id, ip_addr:device.ip_addr})
 }
  disabled(device:Device){

@@ -13,7 +13,7 @@ import { RouterStore } from './router.store'
 
 import { Form } from './form/form.component'
 import { Home } from './home/home.component'
-import { containerRules } from './rules/container.rules';
+
 import { DevRules } from './rules/rules.component';
 import { DevicesStore } from './devices/devices.store';
 
@@ -30,7 +30,7 @@ const rootStores = {
 ReactDOM.render(
    <Provider {...rootStores} >
       <Router history={routerStore.history} >
-      <App >
+      <App>
         <Switch >
           <Route exact path='/home' component={Home as any} />
           <Route exact  path={"/rules/:name/:id"} component={DevRules as any} />

@@ -5,9 +5,13 @@ import { Layout, NavDrawer, Panel, Sidebar } from 'react-toolbox/lib/layout';
 import { AppBar } from 'react-toolbox/lib/app_bar';
 import {Devices} from './devices/devices.component'
 import { inject } from 'mobx-react';
+import{Snackbar} from './snackbar.component'
+import { AppStore } from './app.store';
 @inject('devicesStore')
 export class App extends React.Component<any, any> {
-
+  componentWillMount() {
+    AppStore.getInstance().appComponent = this
+  }
   renderDevTool() {
     if (process.env.NODE_ENV !== 'production') {
       const DevTools = require('mobx-react-devtools').default
@@ -49,11 +53,11 @@ toggleSidebar = () => {
               <div style={{ flex: 1, overflowY: 'visible', padding: '1.8rem' }}>
                 <div className={style.container}>
                   {this.props.children}
-                  {this.renderDevTool()}
+                  {/* this.renderDevTool() */}
                   </div>
               </div>
         </Panel>
-
+      <Snackbar ref='snackbar' />
     </Layout>
     )};
 }

@@ -1,15 +1,12 @@
 import * as React from 'react'
 import { inject, observer, Provider } from 'mobx-react'
-import { observable, action } from 'mobx'
-import { Card, CardMedia, CardTitle, CardText, CardActions } from 'react-toolbox/lib/card'
-import { NavLink, Switch, Route, Redirect, } from 'react-router-dom'
+import { Card,  CardTitle, CardText, CardActions } from 'react-toolbox/lib/card'
+import {  Redirect } from 'react-router-dom'
 import { Button } from 'react-toolbox/lib/button'
 import { RulesStore } from './rules.store'
 import { AppStore } from '../app.store'
 import * as style from './devices.css'
 import * as appStyle from '../app.css'
-import { ContextMenu } from './contextenu.componet';
-import { Input } from 'react-toolbox/lib/input'
 import { DevicesStore } from '../devices/devices.store';
 import { Trigs } from './trigs/trigs.component';
 import { TrigsStore } from './trigs/trigs.store';
@@ -79,19 +76,19 @@ export class RulesComponent extends React.Component<RulesComponentProps, any> {
         <SmsDialog onRef={instance => { this.smsDialog = instance }} />  
         <Button icon='add' onClick={rulesStore.addRule.bind(rulesStore, devicesStore.selected)} floating accent mini className={appStyle.floatRight} />
         <h2>{'Правила для: '+ devicesStore.selected.name}</h2>
-        {rulesStore.rules.map((rule,index) =>rule?
+        {rulesStore.rules.map((rule,index) =>
        
           <Card key={index} className={style.messageCard}>
-         <h3 style={{marginBottom:'5px'}}>{'#' + index} <Button icon='delete' onClick={rulesStore.delRule.bind(rulesStore, devicesStore.selected,index)} floating  mini className={appStyle.floatRight} /></h3> 
+         <h3 style={{margin:'0px'}}>{'#' + index} <Button icon='delete' onClick={rulesStore.delRule.bind(rulesStore, devicesStore.selected,index)} floating  mini className={appStyle.floatRight} /></h3> 
             <CardTitle className ={style.cardTitle}
               
               subtitle=''/>            
             <CardText> 
-            <h3>События: { Trigs(new TrigsStore(rule, index, {codeDialog: this.codeDialog})) }</h3> 
-            <h3>Действия: { Acts(new ActsStore(rule, index, {emailDialog: this.emailDialog,smsDialog: this.smsDialog})) } </h3> 
+            <h3 style={{margin:'0px'}}>События: { Trigs(new TrigsStore(rule, index, {codeDialog: this.codeDialog})) }</h3> 
+            <h3 style={{margin:'0px'}}>Действия: { Acts(new ActsStore(rule, index, {emailDialog: this.emailDialog,smsDialog: this.smsDialog})) } </h3> 
             </CardText>
           </Card>      
-        :'')}
+        )}
     </div>
   }
 }
