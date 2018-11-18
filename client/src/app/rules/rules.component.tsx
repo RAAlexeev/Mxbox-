@@ -76,7 +76,7 @@ export class RulesComponent extends React.Component<RulesComponentProps, any> {
         <SmsDialog onRef={instance => { this.smsDialog = instance }} />  
         <Button icon='add' onClick={rulesStore.addRule.bind(rulesStore, devicesStore.selected)} floating accent mini className={appStyle.floatRight} />
         <h2>{'Правила для: '+ devicesStore.selected.name}</h2>
-        {rulesStore.rules.map((rule,index) =>
+        {rulesStore.rules.map((rule,index) =>rule?
        
           <Card key={index} className={style.messageCard}>
          <h3 style={{margin:'0px'}}>{'#' + index} <Button icon='delete' onClick={rulesStore.delRule.bind(rulesStore, devicesStore.selected,index)} floating  mini className={appStyle.floatRight} /></h3> 
@@ -88,7 +88,7 @@ export class RulesComponent extends React.Component<RulesComponentProps, any> {
             <h3 style={{margin:'0px'}}>Действия: { Acts(new ActsStore(rule, index, {emailDialog: this.emailDialog,smsDialog: this.smsDialog})) } </h3> 
             </CardText>
           </Card>      
-        )}
+        :'')}
     </div>
   }
 }

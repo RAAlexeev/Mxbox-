@@ -1,6 +1,6 @@
 import * as express  from 'express';
 const app = express();
-import {appolo} from './index'
+import {apollo} from './index'
 import { run as modbusTestRun } from './tests.devices/modbus.test';
 import { SubscriptionServer } from 'subscriptions-transport-ws';
 import { execute, subscribe } from 'graphql';
@@ -8,7 +8,7 @@ import { schema } from './schema';
 
 
 
-appolo.applyMiddleware({app});
+apollo.applyMiddleware({app});
 app.use('/', express.static('/home/Raa/workspace/Mxbox/client/dist'));
 app.get('/*', function(req, res){
     res.sendFile('/home/Raa/workspace/Mxbox/client/dist/upload');

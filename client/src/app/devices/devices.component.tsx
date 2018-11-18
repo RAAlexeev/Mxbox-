@@ -50,7 +50,7 @@ export class DevicesComponent extends React.Component<DevicesComponentProps, any
 
         <Button icon='add' onClick={devicesStore.addDevice.bind(devicesStore)} floating accent mini className={appStyle.floatRight} />
       
-      <h3>Hello {appStore.username}</h3>
+      <h3 style={{margin:'1rem'}}>Hello {appStore.username}</h3>
      <Navigation type='vertical'>
       {devicesStore.devices.map(device =>
         <NavLink key={device._id} to={`/rules/${device.name}/${device._id}`} activeClassName={style.active} isActive={(_, { pathname }) =>{ return pathname === `/rules/${device.name}/:${device._id}`}}>

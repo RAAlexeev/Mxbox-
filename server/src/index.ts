@@ -1,7 +1,7 @@
 import { ApolloServer } from 'apollo-server-express';
 import { schema } from './schema';
 
- export const appolo = new ApolloServer({
+ export const apollo = new ApolloServer({
     // These will be defined for both new or existing servers
     schema:schema,
     subscriptions: {

@@ -27,10 +27,10 @@ export class CodeDialog extends React.Component<any> {
   self: this;
 
   handleOnSave(){
-    let code = this.state.code.replace(/\[\d?\s?\d+\.?\d?[f,u]?\]/g,'1')
-        .replace(/[^>^<]\=/g,'===').replace(/or/ig,'||').replace(/and/ig,'&&').replace(/not/g,'!')
-    try{console.log('hadleOnSave:',code, isBoolean(new Function('return ' +code)() ))
-      if(!isBoolean(new Function('return '+code)()) )throw new Error('выражение не логического типа...')
+    let code = this.state.code.replace(/\[\d?\s?\d+\.?\d?[f,u]?\]/g,'(-1.1)')
+        .replace(/([^>^<])\=+/g,'$1 === ').replace(/or/ig,'||').replace(/and/ig,'&&').replace(/not/g,'!')
+    try{console.log('hadleOnSave:',code ,new Function('return ('+code+')')())
+      if(!isBoolean(new Function('return ('+code+')')()) )throw new Error('выражение не логического типа...')
       
       this.curTrig.condition = this.state.code
       
