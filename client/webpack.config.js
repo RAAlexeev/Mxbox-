@@ -2,7 +2,7 @@ var webpack = require('webpack');
 var path = require('path');
 
 // variables
-var isProduction = process.argv.indexOf('-p') >= 0;
+var isProduction = process.env === 'production';
 var sourcePath = path.join(__dirname, './src');
 var outPath = path.join(__dirname, './dist');
 
@@ -10,7 +10,7 @@ var outPath = path.join(__dirname, './dist');
 var HtmlWebpackPlugin = require('html-webpack-plugin');
 var ExtractTextPlugin = require('extract-text-webpack-plugin');
 var CopyWebpackPlugin = require('copy-webpack-plugin');
-const reactToolboxVariables = require('./reactToolbox.css');
+//const reactToolboxVariables = require('./reactToolbox.css');
 
 
 
@@ -29,8 +29,6 @@ const reactToolboxVariables = require('./reactToolbox.css');
   target: 'web',
   resolve: {
     extensions: ['.js', '.ts', '.tsx'],
-    // Fix webpack's default behavior to not load packages with jsnext:main module
-    // (jsnext:main directs not usually distributable es6 format, but es6 sources)
     mainFields: ['module', 'browser', 'main']
   },
   module: {
@@ -43,17 +41,7 @@ const reactToolboxVariables = require('./reactToolbox.css');
       },
       // css
       {
-        /* test: /\.scss$/,
-            use: [
-                "style-loader", // creates style nodes from JS strings
-                "css-loader", // translates CSS into CommonJS
-                "sass-loader" // compiles Sass to CSS, using Node Sass by default
-            ],
- */
-        test: /\.css$/,
-      
-         // use: ExtractTextPlugin.extract({
-        //  fallback: 'style-loader',
+        test: /\.css$/,        
         use: [
             'style-loader',
             {
@@ -62,36 +50,35 @@ const reactToolboxVariables = require('./reactToolbox.css');
                 modules: true,
                 sourceMap: !isProduction,
                 importLoaders: 1,
-                localIdentName: '[local]__[hash:base64:5]'
-                
+                localIdentName: '[local]__[hash:base64:5]',
+               // autoprefixer: false,
               }
             },
-            {
+            'postcss-loader',
+            'resolve-url-loader',
+     /*        {
               loader: 'postcss-loader',
-             
               options: {
-                
-                config:{
-                    ctx:{
-                      'postcss-preset-env': {
-                        SourceMap :"inline",
-                          stage: 0,        // enables all postcss-preset-env features
-                          exec:true,
-                         // importFrom:['reactToolbox.css.js'],
-                          features: {
-                            'color-mod-function': { unresolved: 'warn' },
-                            'custom-properties': {
-                              preserve: false, // returns calculated values instead of variable names
-                              variables: reactToolboxVariables
-                            },
-                          //'nesting-rules': true
-                        
-                         }
-                      }
-                  } 
+               // exec: true ,
+               
+                config: {
+                  ctx: {
+                    
+                    'postcss-preset-env': {
+                     // stage:2,
+                     // features: {
+                   //     'nesting-rules': true,
+
+                     // }
+                    },
+                    cssnano: {},
+
+                  }
                 }
               }
-          }
+            } */
+               
+           
           ]
       //  }) 
       },
@@ -107,8 +94,7 @@ const reactToolboxVariables = require('./reactToolbox.css');
     ],
   },
   plugins: [
-    
-     new ExtractTextPlugin({
+      new ExtractTextPlugin({
       filename: 'styles.css',
       disable: !isProduction
     }),

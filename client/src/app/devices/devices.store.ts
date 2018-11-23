@@ -19,25 +19,10 @@ const addDevice = gql`
 mutation addDevice($mb_addr:Int){
   addDevice(device:{name:"Новое", ip_addr:"127.0.0.1:501", mb_addr:$mb_addr}){
     _id, name,  ip_addr, mb_addr
-  }}`
-const DevicesSubscription = gql`
-
-subscription DeviceSubscription($name: String!){
-  Post(filter: {
-    mutation_in: [CREATED],
-    node: {
-      name: $name
-    }
-  }) {
-    node {
-      id,
-      name,
-      title,
-      message
-    }
   }
 }
 `
+
 
 export interface Device {
   _id: string
@@ -63,7 +48,7 @@ export class DevicesStore {
   @observable selected: Device
    
   @observable isEdit:boolean = false
-  @observable deviceSubscription: ZenObservable.Subscription;
+  deviceSubscription: ZenObservable.Subscription;
   constructor() {
     let self = this
     this.appStore = AppStore.getInstance()
@@ -82,7 +67,7 @@ export class DevicesStore {
     }).subscribe({
       next(data) {
     ///   console.log(this.data)
-       const index = DevicesStore.getInstance().devices.findIndex( (device,index,devices)=>device._id === data.data.deviceLinkState._id )
+       const index = DevicesStore.getInstance().devices.findIndex( (device,index,devices)=>device&&data.data.deviceLinkState?device._id === data.data.deviceLinkState._id:false )
        if(index >= 0) DevicesStore.getInstance().devices[index] = {...DevicesStore.getInstance().devices[index], error:data.data.deviceLinkState.state}
       },
       error(err) { console.error('err', err) },
@@ -109,13 +94,14 @@ export class DevicesStore {
 
     
   }
+
   async addDevice() {
      const result = await this.appStore.apolloClient.mutate<DevicesQueryResult,{}>({
       mutation: addDevice,
-      variables:{
-        mb_addr:((this.devices.length&&this.devices[this.devices.length-1].mb_addr)?this.devices[this.devices.length-1].mb_addr+1:'1')
+      variables:{ 
+        mb_addr:((this.devices.length&&this.devices[this.devices.length-1].mb_addr)?this.devices[this.devices.length-1].mb_addr+1:1)
       },
-      fetchPolicy: 'no-cache'  
+      //fetchPolicy: 'no-cache'  
     })
     
   
@@ -142,7 +128,9 @@ export class DevicesStore {
     
   }
   nameOnChange(device:Device, deviceStore:DevicesStore, value){
-    device.name = value 
+
+    device.name = value.replace(/[\/\:]/g,'')
+    
     deviceStore.updDevice({_id:device._id, name:device.name})
  }
  mb_addrOnChange(device:Device, deviceStore:DevicesStore, value){
@@ -189,16 +177,18 @@ ip_addrOnChange(device:Device,deviceStore:DevicesStore,value){
 }
 
 @action select = (device:Device) => {
+
   if(this.selected != device){
     //console.log(this.rulesStore)
    this.isEdit = true;
   if(this.rulesStore)
   //  try{
       this.rulesStore.initializeRules(device)
-
+    
    // }catch(err){}
  
   }
+  if(device)if(!device.name) device.name = 'Новое'
   this.selected = device
 }
 

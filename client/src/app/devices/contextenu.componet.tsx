@@ -5,8 +5,9 @@ import { Input } from 'react-toolbox/lib/input'
 
 
 export const ContextMenu = (devicesStore,device) =><div>
-  <IconMenu  theme={style}  icon='more_vert' position='topLeft' menuRipple>
-    <MenuItem onClick={()=>(devicesStore.isEdit = true)} value='edit' icon='edit' caption='Изменить' />
+  <IconMenu  icon='more_vert' position='topLeft' menuRipple>
+  <MenuDivider />
+    <MenuItem onClick={()=>devicesStore.addAstemlate} value='save' icon='save_alt' caption='Шаблон' />
    <MenuDivider />
    
     <MenuItem  onClick={devicesStore.delDevice.bind(devicesStore, device)} value='delete' icon='delete' caption='Удалить'  />

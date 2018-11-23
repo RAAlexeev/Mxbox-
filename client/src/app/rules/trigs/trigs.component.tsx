@@ -5,8 +5,8 @@ import Chip from 'react-toolbox/lib/chip';
 import Avatar from 'react-toolbox/lib/avatar';
 import{TrigsStore} from './trigs.store'
 import Button from 'react-toolbox/lib/button';
-import { observe } from 'mobx';
-
+import Tooltip from 'react-toolbox/lib/tooltip';
+const TooltipButton = Tooltip(Button)
 export const Trigs = ( trigStore:TrigsStore ) =>
    <div>
      
@@ -15,9 +15,9 @@ export const Trigs = ( trigStore:TrigsStore ) =>
       { if(trig)switch(trig.type) {
               case 0:return <Chip key={index} deletable onDeleteClick={trigStore.delTrig.bind(this,index)}>
                                 <Avatar style={{backgroundColor: 'deepskyblue'}} icon='code'  />
-                                <Button icon={trig.condition?'':'edit menu'} onClick={()=>trigStore.dialogs.codeDialog.handleToggle(trig, trigStore) }>
+                                <TooltipButton tooltip = 'Изменить' icon={trig.condition?'':'edit menu'} onClick={()=>trigStore.dialogs.codeDialog.handleToggle(trig, trigStore) }>
                                     {trig.condition?trig.condition.trim().slice(0,10):''}
-                                </Button>
+                                </TooltipButton>
                             </Chip>
                            
               default:

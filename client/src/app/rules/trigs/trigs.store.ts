@@ -62,7 +62,7 @@ export class TrigsStore {
   constructor(rule:Rule, ruleNum:number, dialogs) {
     let self = this
     this.ruleNum = ruleNum
-    this.trigs = rule.trigs
+    this.trigs = rule.trigs?rule.trigs:[]
     this.rule = rule
     this.dialogs = dialogs
 /*      this.deviceSubscription = this.appStore.apolloClient.subscribe({

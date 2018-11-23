@@ -28,7 +28,7 @@ const serverConf={
   },
   target:'node',
   resolve: {
-    extensions: ['.js', '.ts', '.tsx'],
+    extensions: ['.js', '.ts', '.tsx','.css'],
     // Fix webpack's default behavior to not load packages with jsnext:main module
     // (jsnext:main directs not usually distributable es6 format, but es6 sources)
     modules: [

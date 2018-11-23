@@ -5,7 +5,7 @@ import { SubscriptionClient    } from 'subscriptions-transport-ws'
 import ApolloClient from 'apollo-client'
 import * as apolloLinkError from 'apollo-link-error'
 
-const wsClient = new SubscriptionClient(`ws://192.168.1.47:3001/graphql`, {
+const wsClient = new SubscriptionClient(`ws://192.168.0.97:3001/graphql`, {
   reconnect: true,
   connectionParams: {
     // Pass any arguments you want for initialization
@@ -20,11 +20,11 @@ const link = ApolloLink.split(
   	const operationAST = getOperationAST(operation.query, operation.operationName);
   	return !!operationAST && operationAST.operation === 'subscription';
   },
-  new WebSocketLink(wsClient), // complete this
   new HttpLink({
-    uri: `http://192.168.1.47:3001/graphql`
-  }), // complete this
-); 
+    uri: `http://192.168.0.97:3001/graphql`
+  }), // complete this 
+  new WebSocketLink(wsClient), // complete this
+) 
 import { onError } from "apollo-link-error";
 import Snackbar from 'react-toolbox/lib/snackbar';
 export class AppStore {
@@ -45,7 +45,7 @@ export class AppStore {
                                                       if (networkError)// console.log(
                                                         snackbar.setState({active:true,label:`[Ошибка сети]: ${networkError}`})
                                                         })
-                                              ,link]),
+                                              , link]),
                       cache: new InMemoryCache()
                       })
 

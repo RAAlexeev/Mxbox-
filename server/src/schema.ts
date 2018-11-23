@@ -63,8 +63,7 @@ import gql from 'graphql-tag'
         mb_addr: Int
         _id: ID!
         ip_addr: String
-        rules:[Rule]!
-        
+        rules:[Rule]!  
     }
     input DeviceInput
     {
@@ -85,11 +84,13 @@ import gql from 'graphql-tag'
       devices:[Device]
       rules(device:ID!):[Rule]
       device(id:ID!):Device
+      templates:[Device]
     }
     type Result{
       status:String
     }
     type Mutation{
+      addAsTemplate(_id:ID!):Result
       addDevice(device:DeviceInput!):Device
       updDevice(deviceInput:DeviceInput!):Result
       delDevice(_id:ID):Result
@@ -102,11 +103,14 @@ import gql from 'graphql-tag'
       addAct(device:ID!,actInput:ActInput!,ruleNum:Int!):Result
       updAct(device:ID!,ruleNum:Int!,actNum:Int!,actInput:ActInput):Act!
       delAct(device:ID!,ruleNum:Int!,actNum:Int!):Result 
+      addFromTemplate(device:ID!,template:ID!):[Rule]
     }
 `);
 import * as Datastore from 'nedb';
 
 export var db = new Datastore({filename : 'db'});
+
+export var db_template = new Datastore({filename : 'db_template'});
 db.loadDatabase();
 interface Sms{
   number:string[]
@@ -157,6 +161,7 @@ class Device implements DeviceInput{
 //import * as util from 'util'
 
  import  { PubSub, makeExecutableSchema } from 'apollo-server-express'
+import { truncate } from 'fs';
  export const LINK_STATE_CHENG = 'LINK_STATE_CHENG' 
  export const pubsub = new PubSub();
  export const resolvers = {
@@ -176,6 +181,12 @@ class Device implements DeviceInput{
       const p = new Promise((resolve,reject)=>{db.find( {_id:args.device }, callback.bind({resolve,reject}))})    
       return p.then().catch()   
     },  
+    templates: (parent, args)=>{
+      db_template.loadDatabase();
+      var callback = function(err,devices){   /*console.log("callback(",dev,")"); */  if( err ){ console.log(err); this.reject(err)} else this.resolve(devices) }         
+      const p = new Promise((resolve,reject)=>{db_template.find( {}, callback.bind({resolve,reject}))})    
+      return p.then().catch()   
+    }
     // trigs:(parent, args)=>{
     //   var callback = function(err, dev){   /*console.log("callback(",dev,")"); */  if( err ){ console.log(err); this.reject(err)} else this.resolve(((dev[0]&&dev[0].rules)?dev[0].rules[this.numRule].trigs:[])) }         
     //   const p = new Promise((resolve,reject)=>{db.find( {_id:args.device }, callback.bind({resolve,reject,num:args.num}))})    
@@ -183,6 +194,7 @@ class Device implements DeviceInput{
     // }
   },
   Mutation:{
+
       addDevice(parent,args,context,info){
           
             var callback = function( err, dev){ if( err ){ console.log(err); this.reject(err)} else this.resolve(dev) }  
@@ -249,27 +261,22 @@ class Device implements DeviceInput{
         var callback = function(err, numberUpdated ){/* console.log("callback(",arguments,")"); */ if(err){ console.log(err.toString()); this.reject({status:err.toString()})} else this.resolve({status:'OK:'+numberUpdated}) }            
         const p = new Promise((resolve,reject)=>{db.update<void>({_id:args.device}, {$unset:{['rules.'+args.ruleNum+'.acts.'+ args.actNum]:undefined}}, {}, callback.bind({resolve,reject}))})    
         return p.then((v)=>v).catch((v)=>v)    
-      }
+      },
 
-      /*       addTrig(parent,args,context,info){
+       addAsTemplate(parent,args,context,info){
+           db_template.loadDatabase();
         var callback = function(err, device){ 
           if(err) {
             console.log(err); this.reject({status:err.toString()})
           }else
           if(device){
             
-           // console.log(device,args.numRule)
-           if( !device.rules[args.numRule].trigs )device.rules[args.numRule].trigs=[]
-
-               
-            
-            device.rules[args.numRule].trigs.push(args.trigInput)
-            db.update({_id:device._id},device,{}, function(err,numberUpdated){
+           db_template.update({_id:device._id},device,{upsert:true},function(err,numberUpdates){
               if(err){
-                console.dir(err); this.reject({status:err.toString()})
+                console.error(err); this.reject({status:err.toString()})
               } else {
-                console.log("OK:"+numberUpdated)
-                this.resolve({status:"OK:"+numberUpdated})
+                console.log("OK:",numberUpdates)
+                  this.resolve(device)
               }
             }.bind(this))
           }else{
@@ -277,12 +284,37 @@ class Device implements DeviceInput{
          } 
         }        
         const p = new Promise((resolve,reject)=>{
-          db.findOne({_id:args.device},callback.bind({resolve,reject}))
+          db.findOne({_id:args._id},callback.bind({resolve,reject}))
         //  db.update<void>({_id:args.device}, {$push:{rules:{enabled:false}}},{}, callback.bind({resolve,reject}))
         })    
         return p.then((v)=>v).catch((v)=>v)    
-      }, */
-      
+      }, 
+    addFromTemplate(parent,args,context,info){
+      db_template.loadDatabase();
+      var callback = function(err, template){ 
+
+        if(err) {
+          console.log(err); this.reject({status:err.toString()})
+        }else
+        if(template){
+            db.update({_id:args.device},{$push:{rules:{$each:template.rules}}}, function(err,numberUpdates, devices){
+            if(err){
+              console.error(err); this.reject({status:err.toString()})
+            } else {
+              console.log("OK:", template)
+              this.resolve(template.rules)
+            }
+          }.bind(this))
+        }else{
+        console.log('template not found',args.template); this.reject('template not found')
+       } 
+      }        
+      const p = new Promise((resolve,reject)=>{
+        db_template.findOne({_id:args.template},callback.bind({resolve,reject}))
+     
+      })    
+      return p.then((v)=>v).catch((v)=>v)    
+    }
   }   
 }
 export const schema = makeExecutableSchema({

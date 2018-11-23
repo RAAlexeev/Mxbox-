@@ -15,7 +15,7 @@ import { Home } from './home/home.component'
 
 import { DevRules } from './rules/rules.component';
 import { DevicesStore } from './devices/devices.store';
-
+//import 'material-design-icons/iconfont/material-icons.css'
 
 const appStore = AppStore.getInstance()
 const routerStore = RouterStore.getInstance()

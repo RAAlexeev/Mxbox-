@@ -1,23 +1,19 @@
 import * as React from 'react';
-import {IconMenu, MenuItem, MenuDivider } from 'react-toolbox/lib/menu';
-import * as style from './devices.css';
-import { Input } from 'react-toolbox/lib/input'
+import { IconMenu, MenuItem, MenuDivider } from 'react-toolbox/lib/menu';
+import * as style from './rules.css';
 
-export const ContextMenu = (devicesStore,device) =><div>     
-  <IconMenu  theme={style}  icon='more_vert' position='topLeft' menuRipple>
-    <MenuItem value='download' icon='get_app' caption='Download' />
-    <MenuItem value='help' icon='favorite' caption='Favorite' />
-    <MenuItem value='settings' icon='open_in_browser' caption='Open in app' />
+import { TemplatesStore } from './templates.store';
+import { RulesStore } from './rules.store';
+import Tooltip from 'react-toolbox/lib/tooltip';
+const TooltipMIconMenu = Tooltip(IconMenu)
+export const TemplateMenu = (templatesStore:TemplatesStore,devicesStore,rulesStore:RulesStore)=> <div>     
+  <TooltipMIconMenu tooltipDelay={500} tooltip='Шаблоны...' className={style.iconMenu}  icon='save_alt' position='topRight' menuRipple>
+    <MenuItem disabled={!(rulesStore.rules.length > 0)}  value='add' icon='save' caption='как шаблон' onClick={templatesStore.addAsTemplate.bind(templatesStore,devicesStore.selected)} />
     <MenuDivider />
-   
-    <MenuItem  onClick={devicesStore.delDevice.bind(devicesStore,device)} value='delete' icon='delete' caption='Delete'  />
-   </IconMenu>
-    <Input theme={style}
-        type='text'
-        name='mame'
-        //error={devicesStore.title.error}
-        value={device.name}
-        maxLength={25}        
-        onChange={devicesStore.nameOnChange.bind(this, device, devicesStore)}
-      />
+    {templatesStore.templates.map((template,index)=> 
+        <MenuItem  key={index} value={'template'+index} icon='get_app' caption={template.name} onClick={rulesStore.addFromTemplate.bind(rulesStore,devicesStore.selected,template)} />
+    )} 
+  </TooltipMIconMenu>
  </div>
+
+ 

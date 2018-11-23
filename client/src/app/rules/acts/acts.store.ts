@@ -60,7 +60,7 @@ export class ActsStore {
   constructor(rule:Rule, ruleNum:number, dialogs) {
     let self = this
     this.ruleNum = ruleNum
-    this.acts = rule.acts
+    this.acts = rule.acts?rule.acts:[]
     this.rule = rule
     this.dialogs = dialogs
 /*      this.deviceSubscription = this.appStore.apolloClient.subscribe({

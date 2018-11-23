@@ -5,7 +5,7 @@ import {  Redirect } from 'react-router-dom'
 import { Button } from 'react-toolbox/lib/button'
 import { RulesStore } from './rules.store'
 import { AppStore } from '../app.store'
-import * as style from './devices.css'
+import * as style from './rules.css'
 import * as appStyle from '../app.css'
 import { DevicesStore } from '../devices/devices.store';
 import { Trigs } from './trigs/trigs.component';
@@ -15,9 +15,11 @@ import { EmailDialog } from './dialogs/email.dialog';
 import {Acts} from './acts/acts.component'
 import { ActsStore } from './acts/acts.store';
 import { SmsDialog } from './dialogs/sms.dialog';
+import {TemplateMenu} from './contextenu.componet'
+import { TemplatesStore } from './templates.store';
+import Tooltip from 'react-toolbox/lib/tooltip';
 
-
-
+const TooltipButton = Tooltip(Button)
 @inject('appStore','devicesStore')
 @observer
 export class DevRules extends React.Component<any, any> {
@@ -25,7 +27,7 @@ export class DevRules extends React.Component<any, any> {
   rulesStore: RulesStore
 
   componentWillMount() {
-    const { appStore, devicesStore} = this.props 
+    const { appStore, devicesStore } = this.props 
     this.rulesStore = new RulesStore()
     //console.log(this.props.devicesStore);
     if(this.props.devicesStore.selected){
@@ -73,8 +75,10 @@ export class RulesComponent extends React.Component<RulesComponentProps, any> {
      return !devicesStore.selected?<Redirect to='/home' />:<div>
         <CodeDialog onRef={instance => { this.codeDialog = instance }} />  
         <EmailDialog onRef={instance => { this.emailDialog = instance }} />  
-        <SmsDialog onRef={instance => { this.smsDialog = instance }} />  
-        <Button icon='add' onClick={rulesStore.addRule.bind(rulesStore, devicesStore.selected)} floating accent mini className={appStyle.floatRight} />
+        <SmsDialog onRef={instance => { this.smsDialog = instance }} />   
+         {TemplateMenu(TemplatesStore.getInstance(), devicesStore, rulesStore)} 
+        <TooltipButton tooltip='Добавить' icon='add' onClick={rulesStore.addRule.bind(rulesStore, devicesStore.selected)} floating accent mini className={appStyle.floatRight} />
+        
         <h2>{'Правила для: '+ devicesStore.selected.name}</h2>
         {rulesStore.rules.map((rule,index) =>rule?
        
@@ -85,10 +89,10 @@ export class RulesComponent extends React.Component<RulesComponentProps, any> {
               subtitle=''/>            
             <CardText> 
             <h3 style={{margin:'0px'}}>События: { Trigs(new TrigsStore(rule, index, {codeDialog: this.codeDialog})) }</h3> 
-            <h3 style={{margin:'0px'}}>Действия: { Acts(new ActsStore(rule, index, {emailDialog: this.emailDialog,smsDialog: this.smsDialog})) } </h3> 
+            <h3 style={{margin:'0px'}}>Действия: { Acts(new ActsStore(rule, index, {emailDialog: this.emailDialog, smsDialog: this.smsDialog})) } </h3> 
             </CardText>
           </Card>      
-        :'')}
+        :null)}
     </div>
   }
 }

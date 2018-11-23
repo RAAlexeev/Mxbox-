@@ -6,8 +6,6 @@ import {Device, DevicesStore} from '../devices/devices.store';
 import { Devices } from '../devices/devices.component';
 import { Trig } from './trigs/trigs.store';
 import{Act} from './acts/acts.store'
-import Snackbar from 'react-toolbox/lib/snackbar';
-import { App } from '../app.component';
 
 const DevicesQuery = gql`
   query DevicesQuery {
@@ -74,7 +72,7 @@ export class RulesStore {
  // deviceSubscription
 
   @observable rules: Array<Rule> = []
-
+  
   constructor() {
     let self = this
     this.appStore = AppStore.getInstance()
@@ -97,8 +95,7 @@ export class RulesStore {
 
   async initializeRules(device:Device) {
       try{ const result = await this.appStore.apolloClient.query<RulesQueryResult,{}>({
-     
-      query: gql`query rules($device:ID!){rules(device:$device){acts{type sms{numbers text} 
+            query: gql`query rules($device:ID!){rules(device:$device){acts{type sms{numbers text} 
                                                                 email{address subject body}} 
                                                                 trigs{type condition inEmail{subject body}  
                                                                 inSms{numbers text} cron}}}`,
@@ -133,7 +130,30 @@ export class RulesStore {
   }
 
 
-
+  @action async addFromTemplate(device:Device,template:Device) {
+    const result = await this.appStore.apolloClient.mutate<RulesQueryResult,{}>({
+     mutation: gql`mutation addFromTemplate($device:ID!,$template:ID!){addFromTemplate(device:$device,template:$template){
+                                                                    acts{
+                                                                          type 
+                                                                          sms{numbers text} 
+                                                                          email{address subject body}
+                                                                    } 
+                                                                    trigs{
+                                                                        type 
+                                                                        condition 
+                                                                        inEmail{subject body}  
+                                                                        inSms{numbers text} cron}
+                                                                    }
+                                                                  }`,
+     variables:{ 
+        device:device._id,
+        template:template._id
+     },
+     //fetchPolicy: 'no-cache'  
+   })
+   console.log(result)
+  result.data.addFromTemplate.forEach(item =>{if(item)this.rules.push(item)})
+  }
 
 
 }

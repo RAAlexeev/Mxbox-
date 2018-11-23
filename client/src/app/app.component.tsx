@@ -53,7 +53,7 @@ toggleSidebar = () => {
               <div style={{ flex: 1, overflowY: 'visible', padding: '1.8rem' }}>
                 <div className={style.container}>
                   {this.props.children}
-                  {/* this.renderDevTool() */}
+                  { this.renderDevTool() }
                   </div>
               </div>
         </Panel>

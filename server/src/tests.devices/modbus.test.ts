@@ -20,7 +20,7 @@ setInterval(()=>
                                         'reconnectTimeout': 15000, /* wait 15 sec if auto reconnect fails to often */
                                         'logLabel' : 'ModbusClientTCP', /* label to identify in log files */
                                         'logLevel': 'debug', /* for less log use: info, warn or error */
-                                        'logEnabled': true
+                                        'logEnabled': false
                                     })
                                     pubsub.publish(LINK_STATE_CHENG, { deviceLinkState:{ _id:device._id, state:'нет соединения' }  });
                                     client.connect()
