@@ -11,6 +11,7 @@ export class Home extends React.Component<any, any> {
   homeStore: HomeStore
   componentWillMount() {
     this.homeStore = new HomeStore()
+    DevicesStore.getInstance().select(null)
   }
 
   render() {
@@ -29,7 +30,7 @@ interface HomeComponentProps {
 @observer
 export class HomeComponent extends React.Component<HomeComponentProps, any> {
   render() {
-    {DevicesStore.getInstance().select(null)}
+    
     const { homeStore, appStore } = this.props
     return <div>
 <h2>Конфигуратор системы оповещения и мониторинга MxBox©</h2>

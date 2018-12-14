@@ -110,7 +110,7 @@ export class TrigsStore {
         device:this.devicesStore.selected._id,
         ruleNum:this.ruleNum,
         trigNum:index,
-        trigInput:{type:0,condition:trig.condition}
+        trigInput:{type:trig.type,condition:trig.condition,cron:trig.cron}
       },
       fetchPolicy: 'no-cache'  
     })

@@ -15,8 +15,8 @@ body {
   float: right;
 }
 
-.appBar{
-  --appbar-color:rgb(156, 37, 0);
-  --button-toggle-font-size:30px;
+.appBar.appBar{
+  background:rgb(156, 37, 0);
+  --button-toggle-font-size:200%; 
 }
 

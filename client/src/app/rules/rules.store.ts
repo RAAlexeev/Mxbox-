@@ -3,7 +3,6 @@ import gql from 'graphql-tag'
 import { AppStore } from '../app.store'
 import { arrayRemove } from '../utils';
 import {Device, DevicesStore} from '../devices/devices.store';
-import { Devices } from '../devices/devices.component';
 import { Trig } from './trigs/trigs.store';
 import{Act} from './acts/acts.store'
 
@@ -126,7 +125,8 @@ export class RulesStore {
       fetchPolicy: 'no-cache'  
     })
     
-    arrayRemove.call(this.rules, this.rules.indexOf(rule))
+   // arrayRemove.call(this.rules, this.rules.indexOf(rule))
+   this.rules[ruleNum]=null
   }
 
 
@@ -151,8 +151,11 @@ export class RulesStore {
      },
      //fetchPolicy: 'no-cache'  
    })
-   console.log(result)
-  result.data.addFromTemplate.forEach(item =>{if(item)this.rules.push(item)})
+  // console.log(result)
+   const indexFist = result.data.addFromTemplate.findIndex( item=>item?true:false )
+    result.data.addFromTemplate.forEach( ( item, index )=>{ if( index >= indexFist )this.rules.push( item )} )
+  // this.rules.push(result.data.addFromTemplate)
+
   }
 
 

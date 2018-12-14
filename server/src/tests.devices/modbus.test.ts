@@ -1,10 +1,15 @@
-import node_modbus from 'node-modbus'
-import {db, pubsub, LINK_STATE_CHENG} from '../schema' 
+import node_modbus from '../../node_modules/node-modbus'
+import { db, pubsub, LINK_STATE_CHENG, Device } from '../schema' 
+import { sendMail } from './result/send.email'
 
-export const run = ()=>{
-setInterval(()=> 
-    db.find({'rules.trigs.type':0}
-            ,(err,devices:Device[])=>{
+var intervalReload
+
+export const modbusTestRun = ()=>{
+    //clearInterval( intervalReload )
+   // intervalReload = setInterval( 
+        ()=> 
+        db.find( { 'rules.trigs.type':0 }
+            ,( err, devices:Device[] )=>{
                         const time_interval = 1000*60
                         let intervals:any[]=[] 
                             intervals.forEach(interval =>{clearInterval(interval)})
@@ -38,15 +43,16 @@ setInterval(()=>
                             else console.error(err.toString())
                         
                         })
-,1000*30)}
+//,1000*60*60)
+}
 
 interface Sms{
-    number:string[]
+    numbers:Array<string>
     text:string
   }
-  interface Email{
-    addr:string
-    subj:string
+ export interface Email{
+    address:string
+    subject:string
     body?:string
   }
   interface Trig{
@@ -57,18 +63,16 @@ interface Sms{
     cron?:string
     regs?:Reg[]
   }
-   interface Rule {
-    trigs?:Trig[]
-    smss?: Sms[]
-    email?: Email[]
+   interface Act{
+    sms?:Sms
+    email?:Email
   }
-interface Device{
-    _id:string
-    name:string 
-    mb_addr:number
-    ip_addr:string
-    rules:Rule[]
-}
+  interface Rule {
+    trigs?:Trig[]
+    acts?:Act[]
+  }
+
+
 interface Reg{
     func:number
     addr:number
@@ -77,17 +81,23 @@ interface Reg{
     qualifier:string
 }
 
-
+interface DevicesRulesTimeOut{
+   _id:string
+   ruleNum:number
+   timestamp:Date
+}
 
 class TestDevicesModbus {
 
     constructor(){
        
     }
-    private static parse (s:string):Reg[]{   
+    private static parse ( s:string) :Reg[]{   
         const regs:Reg[] = []  
+
         const match = s.match(/\[(\d+)\s+(\d+)\.?(\d?(?<=\d)[\d,f,u]?)\]/g)
-        if(match)    
+
+        if( match )    
             for (let i = 0; i < match.length; i++) {
                 regs.push({
                     pattern:match[i],//0
@@ -101,20 +111,23 @@ class TestDevicesModbus {
             return regs
     }
 
-    private static modbusError(err,device){
+    private static modbusError( err, device ){
         pubsub.publish(LINK_STATE_CHENG, { deviceLinkState:{ device:device, state:err.toString() }  });
             console.error(err.toString())
     }
-    private static onTrig(rule:Rule){
-    
+    private static devicesRuleTimeOut:Array<DevicesRulesTimeOut>
+    private static onTrig( device:Device, rule:Rule, index:number ){
+       let  deviceRuleTimeOut = this.devicesRuleTimeOut.find((value)=>{return value._id === device._id})
+        if( rule && rule.acts ) rule.acts.forEach( act => {  if( act.email ) sendMail( device, act.email, index ); /*if(act.sms)*/ } )
+        
             //send SMSs Emails
     }
-    private static testTrig (trig:Trig):boolean{
+    private static testTrig ( trig:Trig ):boolean{
             let jsCode
-            if(trig && trig.regs){
+            if( trig && trig.regs ){
              trig.regs.forEach(reg => {
-                if(trig.condition && reg && reg.val)
-                  jsCode = trig.condition.replace(reg.pattern,'('+reg.val.toString()+')') 
+                if( trig.condition && reg && reg.val )
+                  jsCode = trig.condition.replace(reg.pattern,'('+ reg.val.toString() + ')') 
                 });
             try{
                 return new Function(jsCode)()    
@@ -127,13 +140,13 @@ class TestDevicesModbus {
     }
         
     private static getSizeDataReguest(reg:Reg):number{
-        if(reg.qualifier)
+        if( reg.qualifier )
          if( reg.qualifier.search(/f/) ) return 2
          
         return 1
     }    
     private static processResponse(resp, reg:Reg){
-        if (!reg.qualifier) {
+        if ( !reg.qualifier ) {
            reg.val =new Int16Array( resp.register[0] )[0] 
         } else 
             if(reg.qualifier.search(/u/)){
@@ -151,8 +164,8 @@ class TestDevicesModbus {
             }
         
     }    
-    static testTrigs (device:Device, client){
-            device.rules.forEach(rule =>{
+    static testTrigs ( device:Device, client ){
+            device.rules.forEach( (rule ,index) =>{
                 if(rule.trigs)
                     rule.trigs.forEach(trig=>{
                         if(trig){
@@ -163,7 +176,7 @@ class TestDevicesModbus {
                                         case 1: client.readCoils(reg.addr,1)
                                                         .then(resp=>{this.processResponse(resp, reg)},resp=>this.modbusError.bind(this,resp,device) )
                                         break 
-                                        case 1: client.readCoils(reg.addr,1)
+                                        case 2: client.readInputs(reg.addr,1)
                                                         .then(resp=>{this.processResponse(resp, reg)},resp=>this.modbusError.bind(this,resp,device) )
                                         break
                                         case 3: client.readHoldingRegisters(reg.addr, this.getSizeDataReguest(reg))
@@ -175,12 +188,12 @@ class TestDevicesModbus {
                                         default: console.error('Неподдержаная функция модбаса или парсер не распарсил!')                                            
                                     }
                                 },this)
-                                if(this.testTrig(trig)) this.onTrig(rule)
+                                if( this.testTrig( trig ) ) this.onTrig( device, rule, index )
                             }
                         }
-                    },this)
+                    }, this)
                     
-                },this)
+                }, this)
             
 
      }

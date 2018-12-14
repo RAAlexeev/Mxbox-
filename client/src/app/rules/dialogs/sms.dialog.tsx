@@ -4,14 +4,17 @@ import Input from 'react-toolbox/lib/input';
 import { observable } from 'mobx';
 import Button from 'react-toolbox/lib/button';
 import * as appStyle from '../../app.css'
+import Autocomplete from 'react-toolbox/lib/autocomplete';
+import { DevicesStore } from '../../devices/devices.store';
 
 export class SmsDialog extends React.Component<any> {
-  onRef
- @observable state = {
+
+  state = {
    active: false,
    numbers:[],
    text:'',
-   error:''
+   error:'',
+   directory:[] 
   }
   addNumber:Function
   upd:Function
@@ -59,18 +62,20 @@ export class SmsDialog extends React.Component<any> {
   constructor(props) {
     
     super(props)
-    //this.onRef = React.createRef();
-    this.onRef = props.onRef
+
 
   }
 
-  componentWillMount() {
+  async componentWillMount() {
+   await DevicesStore.getInstance().getDirectory()
+    this.setState({...this.state, directory: DevicesStore.getInstance().directory.numbers})
+    console.log('!!',this.state.directory)
    
-    this.onRef(this)
+    
   }
 
   componentWillUnmount() {
-     this.onRef(null)
+
   }
   render () {
     return (
@@ -84,7 +89,21 @@ export class SmsDialog extends React.Component<any> {
           title='SMS'
         >
          {this.state.numbers.map((number, index)=>number!=undefined||!index?
-            <Input key={index}  type='phone' label='Номер' icon='phone' value={number} onChange={this.handleChangeNumber.bind(this, index)} maxLength={15}/>:''
+                    <Autocomplete 
+                    key={index}
+                    icon='phone'
+                     direction="down"
+                     label="Номер:"
+                     hint=""
+                     multiple={false}
+                     onChange={this.handleChangeNumber.bind(this, index)}
+                     onQueryChange={this.handleChangeNumber.bind(this, index)}
+                     value={number?number:''}
+                     allowCreate={true}
+                     source={this.state.directory}
+                     
+                   />
+           :null
           )}
           {this.state.numbers[this.state.numbers.length-1]!=''?<Button icon='add' onClick={this.handleAddNumber.bind(this)} floating  mini  />:''}
          

@@ -127,13 +127,15 @@ export class DevicesStore {
     })
     
   }
-  nameOnChange(device:Device, deviceStore:DevicesStore, value){
+  
+  nameOnChange=(device:Device, deviceStore:DevicesStore, value)=>{
 
     device.name = value.replace(/[\/\:]/g,'')
     
-    deviceStore.updDevice({_id:device._id, name:device.name})
+    this.updDevice({_id:device._id, name:device.name})
  }
- mb_addrOnChange(device:Device, deviceStore:DevicesStore, value){
+
+ mb_addrOnChange=(device:Device, deviceStore:DevicesStore, value)=>{
  // if (!value.search(/\d+/g))  return;
   if(value){
    // console.log(value)
@@ -191,7 +193,26 @@ ip_addrOnChange(device:Device,deviceStore:DevicesStore,value){
   if(device)if(!device.name) device.name = 'Новое'
   this.selected = device
 }
+ directory={
+  address :[],
+  numbers :[]
+}
+getDirectory = async()=>{
+
+  const result = await this.appStore.apolloClient.query<any,{}>({
+            query: gql`query getDirectory{getDirectory{numbers address}}`,
+            variables:{},
+            fetchPolicy: 'network-only'
+          }) 
+          
+  this.directory=result.data.getDirectory
+ console.log(this.directory)
+
+
+
+  }
 
 }
+
 
 

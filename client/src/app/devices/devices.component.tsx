@@ -19,6 +19,7 @@ export class Devices extends React.Component<any, any> {
 
   devicesStore: DevicesStore
   componentWillMount() {
+    
     this.devicesStore = DevicesStore.getInstance()
   }
 

@@ -29,7 +29,7 @@ export class Snackbar extends React.Component {
             action=' ОК'
             active={this.state.active}
             label={this.state.label}
-            timeout={2000}
+            timeout={3000}
             onClick={this.handleSnackbarClick}
             onTimeout={this.handleSnackbarTimeout}
             type='cancel'

@@ -5,6 +5,8 @@ var path = require('path');
 var isProduction = process.argv.indexOf('-p') >= 0;
 var sourcePath = path.join(__dirname, './src');
 var outPath = path.join(__dirname, './dist');
+// Try the environment variable, otherwise use root
+const ASSET_PATH = process.env.ASSET_PATH || '/';
 const NodemonPlugin = require( 'nodemon-webpack-plugin' ) // Ding
 // plugins
 var nodeExternals = require('webpack-node-externals');
@@ -22,13 +24,14 @@ const serverConf={
   output: {
     path: outPath,
     filename: '[name].js',
-    chunkFilename: '[name]-[chunkhash].js',
+    chunkFilename: '[name].js',
+    library:'bundle.js',
     libraryTarget: "commonjs2",
     publicPath: '/'
   },
-  target:'node',
+  target:'async-node',
   resolve: {
-    extensions: ['.js', '.ts', '.tsx','.css'],
+    extensions: ['.js', '.ts'],
     // Fix webpack's default behavior to not load packages with jsnext:main module
     // (jsnext:main directs not usually distributable es6 format, but es6 sources)
     modules: [
@@ -42,7 +45,7 @@ const serverConf={
       // .ts, .tsx
       {
         test: /\.tsx?$/,
-        exclude: /[\\/]node_modules[\\/]/,
+      //  exclude: /\/node_modules\//,
         use: 'awesome-typescript-loader',
       },
       {
@@ -55,24 +58,26 @@ const serverConf={
   plugins: [
     new NodemonPlugin(), // Dong
 ],
- /* optimization: { 
-
-  runtimeChunk: "single",
-  splitChunks: {
-   chunks: 'async',
-   maxInitialRequests: Infinity,
-   minSize: 0,
+node: { __dirname: false },
+ optimization: { 
+  namedChunks: true,
+ // runtimeChunk: "single",
+    splitChunks: {
+      
+      chunks: 'async',
+      maxInitialRequests: Infinity,
+      minSize: 0,
    cacheGroups: {
      vendor: {
        test: /[\\/]node_modules[\\/]/,
        name: 'vendor',
        enforce: true,
-       chunks: 'initial'
+       //chunks: 'all'
      },
    },
- },
-}, */
-externals: [nodeExternals()]
+ }, 
+},  
+//externals: [nodeExternals()]
 }
 
 

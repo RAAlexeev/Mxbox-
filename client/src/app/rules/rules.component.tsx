@@ -12,14 +12,15 @@ import { Trigs } from './trigs/trigs.component';
 import { TrigsStore } from './trigs/trigs.store';
 import { CodeDialog } from './dialogs/code.dialog';
 import { EmailDialog } from './dialogs/email.dialog';
-import {Acts} from './acts/acts.component'
+import { Acts } from './acts/acts.component'
 import { ActsStore } from './acts/acts.store';
 import { SmsDialog } from './dialogs/sms.dialog';
-import {TemplateMenu} from './contextenu.componet'
+import {TemplateMenu } from './contextenu.componet'
 import { TemplatesStore } from './templates.store';
 import Tooltip from 'react-toolbox/lib/tooltip';
-
-const TooltipButton = Tooltip(Button)
+import { CronDialog } from './dialogs/cron.dialog';
+import './style.css'
+const TooltipButton = Tooltip( Button )
 @inject('appStore','devicesStore')
 @observer
 export class DevRules extends React.Component<any, any> {
@@ -40,12 +41,9 @@ export class DevRules extends React.Component<any, any> {
      this.rulesStore.destructor()
   }
 
-  render() {  //this.rulesStore = new RulesStore()
-    //this.rulesStore.initializeRules(this.props.devicesStore.selected)
-   
-    return <Provider rulesStore={this.rulesStore}>
- 
-    <RulesComponent {...this.props} />
+  render() {  
+    return <Provider rulesStore = { this.rulesStore }>
+      <RulesComponent { ...this.props } />
     </Provider>
   }
    
@@ -64,7 +62,8 @@ export class RulesComponent extends React.Component<RulesComponentProps, any> {
   codeDialog:CodeDialog; 
   emailDialog:EmailDialog;
   smsDialog:SmsDialog;
-  //onRef: React.RefObject<{}>;
+  cronDialog:CronDialog;
+  
   
    render() {
   
@@ -73,23 +72,32 @@ export class RulesComponent extends React.Component<RulesComponentProps, any> {
     const { name } = this.props.match.params
   
      return !devicesStore.selected?<Redirect to='/home' />:<div>
-        <CodeDialog onRef={instance => { this.codeDialog = instance }} />  
-        <EmailDialog onRef={instance => { this.emailDialog = instance }} />  
-        <SmsDialog onRef={instance => { this.smsDialog = instance }} />   
-         {TemplateMenu(TemplatesStore.getInstance(), devicesStore, rulesStore)} 
-        <TooltipButton tooltip='Добавить' icon='add' onClick={rulesStore.addRule.bind(rulesStore, devicesStore.selected)} floating accent mini className={appStyle.floatRight} />
-        
-        <h2>{'Правила для: '+ devicesStore.selected.name}</h2>
-        {rulesStore.rules.map((rule,index) =>rule?
-       
+        <CodeDialog ref={instance =>  this.codeDialog = instance } />  
+        <EmailDialog ref={instance =>  this.emailDialog = instance } />  
+        <SmsDialog ref={instance =>  this.smsDialog = instance } />   
+        <CronDialog ref = {instance=>this.cronDialog = instance}  />
+        { TemplateMenu( TemplatesStore.getInstance(), devicesStore, rulesStore ) } 
+        <TooltipButton tooltip='Добавить' icon='add' onClick={rulesStore.addRule.bind( rulesStore, devicesStore.selected )} floating accent mini className={appStyle.floatRight} />
+        <h2>{'Правила для: ' + devicesStore.selected.name}</h2>
+        { rulesStore.rules.map((rule, index) =>rule?
           <Card key={index} className={style.messageCard}>
-         <h3 style={{margin:'0px'}}>{'#' + index} <Button icon='delete' onClick={rulesStore.delRule.bind(rulesStore, devicesStore.selected,index)} floating  mini className={appStyle.floatRight} /></h3> 
-            <CardTitle className ={style.cardTitle}
-              
-              subtitle=''/>            
-            <CardText> 
-            <h3 style={{margin:'0px'}}>События: { Trigs(new TrigsStore(rule, index, {codeDialog: this.codeDialog})) }</h3> 
-            <h3 style={{margin:'0px'}}>Действия: { Acts(new ActsStore(rule, index, {emailDialog: this.emailDialog, smsDialog: this.smsDialog})) } </h3> 
+        
+                    
+            <CardText style={{padding:0}}> 
+            <table> 
+            <tbody>
+              <tr><td>
+                <h3>{index+'#'} </h3>
+              </td>
+                <td> 
+                <div style={{margin:'0px'}}>События: { Trigs(new TrigsStore(rule, index, {codeDialog: this.codeDialog, cronDialog: this.cronDialog})) }</div> 
+                </td><td>
+                <div style={{margin:'0px'}}>Действия: { Acts(new ActsStore(rule, index, {emailDialog: this.emailDialog, smsDialog: this.smsDialog})) } </div> 
+                </td>
+              </tr>
+              </tbody>
+            </table> <Button icon='clear' onClick={rulesStore.delRule.bind(rulesStore, devicesStore.selected,index)} floating  mini className={appStyle.floatRight} style={{marginTop:'-4%'}}  />
+           
             </CardText>
           </Card>      
         :null)}

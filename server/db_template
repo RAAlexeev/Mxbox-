@@ -1,0 +1,2 @@
+{"name":"ДНК-4","mb_addr":3,"ip_addr":"127.0.0.1:501","rules":[{"enabled":false,"trigs":[{"type":0},{"type":0,"condition":null},{"type":1,"cron":"1 * * * 2 *"}],"acts":[{"type":0}]},{"enabled":false,"trigs":[{"type":0}],"acts":[{"type":0}]}],"_id":"R89mLbK850rRIzGr"}
+{"name":"ДНК-4","mb_addr":3,"ip_addr":"127.0.0.1:501","rules":[{"enabled":false,"trigs":[{"type":0},{"type":0,"condition":null},{"type":1,"cron":"1 * * * 2 *"}],"acts":[{"type":0}]},{"enabled":false,"trigs":[{"type":0}],"acts":[{"type":0}]}],"_id":"R89mLbK850rRIzGr"}

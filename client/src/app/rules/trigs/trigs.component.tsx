@@ -19,6 +19,13 @@ export const Trigs = ( trigStore:TrigsStore ) =>
                                     {trig.condition?trig.condition.trim().slice(0,10):''}
                                 </TooltipButton>
                             </Chip>
+             case 1:return <Chip key={index} deletable onDeleteClick={trigStore.delTrig.bind(this,index)}>
+                                <Avatar style={{backgroundColor: 'deepskyblue'}} icon='alarm'  />
+                                <TooltipButton tooltip = 'Изменить' icon={trig.cron?null:'edit menu'} onClick={()=>trigStore.dialogs.cronDialog.handleToggle(trig, trigStore.updTrig) }>
+                                    {trig.cron?trig.cron.trim().slice(0,10):null}
+                                </TooltipButton>
+                            </Chip>
+
                            
               default:
                   break;
@@ -27,8 +34,8 @@ export const Trigs = ( trigStore:TrigsStore ) =>
     )} 
    
     <IconMenu icon='add' position='topLeft' menuRipple>
-        <MenuItem value='condition' icon='code' caption='Условие'  onClick={trigStore.addTrig.bind(this,{type:0})} />
-        <MenuItem value='cron' icon='alarm' caption='Расписание' />
+        <MenuItem value='condition' icon='code' caption='Условие'  onClick={trigStore.addTrig.bind(trigStore,{type:0})} />
+        <MenuItem value='cron' icon='alarm' caption='Расписание'  onClick={trigStore.addTrig.bind(trigStore,{type:1})} />
         <MenuItem value='in_sms' icon='sms' caption='sms' />
         <MenuItem value='in_email' icon='email' caption='Email' />
     </IconMenu>

@@ -7,9 +7,14 @@ import {Devices} from './devices/devices.component'
 import { inject } from 'mobx-react';
 import{Snackbar} from './snackbar.component'
 import { AppStore } from './app.store';
+
+
+
 @inject('devicesStore')
 export class App extends React.Component<any, any> {
+  snackbar: any;
   componentWillMount() {
+  
     AppStore.getInstance().appComponent = this
   }
   renderDevTool() {
@@ -39,25 +44,25 @@ toggleSidebar = () => {
     return( 
     <Layout>
       <NavDrawer active={this.state.drawerActive}
-                pinned={this.state.drawerPinned} permanentAt='xl'
+                pinned={this.state.drawerPinned} permanentAt='md'
                 onOverlayClick={ this.toggleDrawerActive }>
             
-            <NavLink to='/home' style={{margin:'1rem'}}  activeClassName={style.active}>Home</NavLink>
-          
+            <NavLink to='/home' style={{margin:'1rem'}}  activeClassName={style.active}>Главня</NavLink>
+            <NavLink to='/settings' style={{margin:'1rem'}} activeClassName={style.active}>Настройки</NavLink>  
             <Devices {...this.props} />
       </NavDrawer>
       <Panel>
-        <AppBar leftIcon='menu' onLeftIconClick={ this.toggleDrawerActive } className={style.appBar} >
+        <AppBar leftIcon='menu' onLeftIconClick={ this.toggleDrawerActive } theme={style} >
         <h1 style={{marginLeft: '10px'}}>MxBox&copy;	&ndash; OOO НТФ "Микроникс"</h1>
         </AppBar> 
               <div style={{ flex: 1, overflowY: 'visible', padding: '1.8rem' }}>
                 <div className={style.container}>
                   {this.props.children}
-                  { this.renderDevTool() }
+                  { /* this.renderDevTool() */ }
                   </div>
               </div>
         </Panel>
-      <Snackbar ref='snackbar' />
+      <Snackbar ref={inst=>this.snackbar=inst} />
     </Layout>
     )};
 }

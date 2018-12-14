@@ -2,7 +2,7 @@
   "compilerOptions": {
     "sourceMap": true,
     "target": "es6",
-    "module": "es2015",
+    "module": "esnext",
     "baseUrl": ".",    
     "moduleResolution": "node",
     "emitDecoratorMetadata": false,

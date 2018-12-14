@@ -15,6 +15,7 @@ import { Home } from './home/home.component'
 
 import { DevRules } from './rules/rules.component';
 import { DevicesStore } from './devices/devices.store';
+import { Settings } from './settings/settings.componet';
 //import 'material-design-icons/iconfont/material-icons.css'
 
 const appStore = AppStore.getInstance()
@@ -32,6 +33,7 @@ ReactDOM.render(
       <App>
         <Switch >
           <Route exact path='/home' component={Home as any} />
+          <Route exact path='/settings' component={Settings as any} />
           <Route exact  path={"/rules/:name/:id"} component={DevRules as any} />
           <Redirect from='/' to='/home' />
         </Switch>

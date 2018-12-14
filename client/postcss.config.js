@@ -1,16 +1,27 @@
 module.exports = ({ file, options, env }) => ({  
-  map: env==='development'?'inline':false,
+  map: 'inline',//env==='development'?'inline':false,
   parser: file.extname === '.sss' ? 'sugarss' : false,
-    plugins: [
+      plugins: [
       require('postcss-import'),
-      require('postcss-url'),
-      require('postcss-color-function'),
+      require('postcss-url'), 
       require('postcss-preset-env')({
+       // autoprefixer: { grid: true },
         browsers: 'last 2 versions',
-        stage: 0,
+        preserve: false,
+        stage:2,
+        features: {
+          'nesting-rules': true,
+          'color-mod-function': { unresolved: 'warn' }
+        },
+        importFrom:{
+          customProperties:{
+            '--button-toggle-font-size':'200%'
+          }
+        }
       }),
+     require('postcss-color-function'),
     ],
-  
+    'cssnano': env === 'production'? {}: false
 /*   plugins: {
   //  'postcss-color-function':{},//options['postcss-color-function'] ? options['postcss-color-function'] : false,
    // 'postcss-reporter':{},
@@ -23,6 +34,6 @@ module.exports = ({ file, options, env }) => ({
    // 'postcss-pxtorem':{ propList: ['*', '!border', '!box-shadow'] },
     //'postcss-browser-reporter':{ disabled: false },    
     //'postcss-url':{},
-    'cssnano': env === 'production'? options.cssnano : false
+   
   } */
 });

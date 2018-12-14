@@ -3,7 +3,7 @@ import { ApolloLink, HttpLink, InMemoryCache } from "apollo-boost"
 import {WebSocketLink} from 'apollo-link-ws'
 import { SubscriptionClient    } from 'subscriptions-transport-ws'
 import ApolloClient from 'apollo-client'
-import * as apolloLinkError from 'apollo-link-error'
+//import * as apolloLinkError from 'apollo-link-error'
 
 const wsClient = new SubscriptionClient(`ws://192.168.0.97:3001/graphql`, {
   reconnect: true,
@@ -22,8 +22,8 @@ const link = ApolloLink.split(
   },
   new HttpLink({
     uri: `http://192.168.0.97:3001/graphql`
-  }), // complete this 
-  new WebSocketLink(wsClient), // complete this
+  }),  
+  new WebSocketLink(wsClient),
 ) 
 import { onError } from "apollo-link-error";
 import Snackbar from 'react-toolbox/lib/snackbar';
@@ -34,7 +34,7 @@ export class AppStore {
 
   apolloClient = new ApolloClient({
                       link: ApolloLink.from([ onError(({ graphQLErrors, networkError }) => {
-                                                      const snackbar = this.appComponent.refs.snackbar as Snackbar 
+                                                      const snackbar = this.appComponent.snackbar as Snackbar 
                                                         if (graphQLErrors)
                                                           graphQLErrors.map(({ message, locations, path }) =>
 
@@ -52,7 +52,7 @@ export class AppStore {
 
   constructor(){
    
- 
+    console.log(document.domain)
 
 
   }

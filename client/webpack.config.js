@@ -15,7 +15,7 @@ var CopyWebpackPlugin = require('copy-webpack-plugin');
 
 
  const clientConf = {
-  mode:"development",
+  mode:'development',//"production",
   context: sourcePath,
   entry: {
     main: './index.ts',
@@ -41,7 +41,8 @@ var CopyWebpackPlugin = require('copy-webpack-plugin');
       },
       // css
       {
-        test: /\.css$/,        
+        test: /\.css$/,    
+        //exclude:/style\.css/,    
         use: [
             'style-loader',
             {
@@ -49,13 +50,15 @@ var CopyWebpackPlugin = require('copy-webpack-plugin');
               options: {
                 modules: true,
                 sourceMap: !isProduction,
-                importLoaders: 1,
+                importLoaders: 2,
                 localIdentName: '[local]__[hash:base64:5]',
-               // autoprefixer: false,
+                autoprefixer: false,
               }
             },
-            'postcss-loader',
             'resolve-url-loader',
+            'postcss-loader',
+            
+            
      /*        {
               loader: 'postcss-loader',
               options: {
@@ -152,7 +155,7 @@ const serverConf={
     publicPath: '/'
   },
   devtool:'eval-source-map',
-  target:'async-node',
+  target:'web',
   resolve: {
     extensions: ['.js', '.ts', '.tsx'],
     // Fix webpack's default behavior to not load packages with jsnext:main module

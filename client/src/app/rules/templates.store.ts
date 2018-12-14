@@ -67,8 +67,18 @@ export class TemplatesStore {
      },
      //fetchPolicy: 'no-cache'  
    })
+   
 
    this.initializeTemlates()
   }
-
+  async delTemplate( device ) {
+    const result = await this.appStore.apolloClient.mutate<TemplatesQueryResult,{}>({
+     mutation: gql`mutation delTemplate($device:ID!){delTemplate(_id:$device){status}}`,
+     variables:{ 
+        device:device._id
+     },
+     //fetchPolicy: 'no-cache'  
+   })
+   this.initializeTemlates()
+  }
 }

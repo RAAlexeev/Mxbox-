@@ -1,36 +1,35 @@
 import Dialog from 'react-toolbox/lib/dialog';
 import React = require('react');
 import Input from 'react-toolbox/lib/input';
-import { observable } from 'mobx';
-import {Trig, TrigsStore} from '../trigs/trigs.store'
-import { Act, ActsStore } from '../acts/acts.store';
-import { Email } from '../rules.store';
-
+import Autocomplete from 'react-toolbox/lib/autocomplete';
+import {DevicesStore} from '../../devices/devices.store'
 export class EmailDialog extends React.Component<any> {
-  onRef
- @observable state = {
+state = {
    active: false,
-   email:'',
    address:'',
    subject:'',
    body:'',
-   error:''
+   error:'',
+   directory:[]
   }
  
   upd:Function
   obj
-  handleToggle = (obj?,upd?:Function) => {
-    
+  handleToggle = ( obj?,upd?:Function ) => {
+    console.log(obj)
     this.upd = upd
     this.obj = obj
-    this.setState({...this.state, address:'', subject:'', body:'', error:''})
-    if(obj){
-    if(!obj.email) obj.email = {address:'',subject:'', body:''}
-      if(obj.email.address) this.setState({...this.state,address:obj.email.address})
-      if(obj.email.subject) this.setState({...this.state,subject:obj.email.subject})
-      if(obj.email.body) this.setState({...this.state,body:obj.email.body})
-    }
-    this.setState({active:!this.state.active});
+ 
+    if( obj ){
+    if( !obj.email ) obj.email = { address:'', subject:'', body:'' }
+     
+    this.setState( { ...this.state,address:obj.email.address, subject:obj.email.subject, body:obj.email.body, active:!this.state.active } )
+    
+
+    } else  this.setState( { ...this.state,address:'', subject:'', body:'', active:!this.state.active } )
+  
+   
+
   }
 
   handleOnSave(){ 
@@ -43,28 +42,28 @@ export class EmailDialog extends React.Component<any> {
     { label: "Отмена", onClick: this.handleToggle }
   ]
   handleChange(name:string, value:string){
+   
     this.setState({...this.state, [name]: value})
   }
   constructor(props) {
     
     super(props)
-    //this.onRef = React.createRef();
-    this.onRef = props.onRef
+
 
   }
 
-  componentWillMount() {
-   
-    this.onRef(this)
+  async componentWillMount() {
+   await DevicesStore.getInstance().getDirectory()
+   this.setState({...this.state, directory: DevicesStore.getInstance().directory.address})
   }
 
   componentWillUnmount() {
-     this.onRef(null)
+
   }
+
   render () {
     return (
       <div>
-      
         <Dialog
           actions={this.actions}
           active={this.state.active}
@@ -72,12 +71,25 @@ export class EmailDialog extends React.Component<any> {
           onOverlayClick={this.handleToggle}
           title='Email'
         >
-         <Input type='email' label='Email адреса' icon='email' value={this.state.email} onChange={this.handleChange.bind(this, 'email')} />
+         <section>
+         <Autocomplete
+         icon='email'
+          direction="down"
+          label="Кому:"
+          hint=""
+          multiple={false}
+          onChange={this.handleChange.bind(this, 'address')}
+          onQueryChange={this.handleChange.bind(this, 'address')}
+          value={this.state.address}
+          allowCreate={true}
+          source={this.state.directory}
+        />
          <Input type='text' label='Тема' icon='subject' value={this.state.subject} onChange={this.handleChange.bind(this, 'subject')} />
          <Input type='text' multiline rows={10} error={this.state.error} hint='Здесь вы  также можете вставлять ссылки на modbus адреса в квадратных скобках [03 12], [12f](p.s. и в теме тоже)'
-                icon='email' value={this.state.body} onChange={this.handleChange.bind(this,'body') }/>
+                icon='email' value={this.state.body} onChange={this.handleChange.bind(this,'body') }/>  
+        </section>
         </Dialog>
-      </div>
+     </div>
     )
   }
 }

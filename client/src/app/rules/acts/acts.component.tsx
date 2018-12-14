@@ -14,15 +14,15 @@ export const Acts = ( actsStore:ActsStore ) =>
      { actsStore.acts.map((act, index )=>         
       { if(act)switch(act.type) {
               case 0:return <Chip key={index} deletable onDeleteClick={actsStore.delAct.bind(this,index)}>
-                                <Avatar style={{backgroundColor: 'deepskyblue'}} icon='sms'  />
-                                <Button icon={act.sms&&act.sms.text?'':'edit menu'} onClick={()=>{ act.index = index; actsStore.dialogs.smsDialog.handleToggle(act, actsStore.updActSms) }}>
-                                    {act.sms&&act.sms.text?act.sms.text.trim().slice(0,10):''}
+                                <Avatar style={{ backgroundColor: 'deepskyblue' }} icon='sms'  />
+                                <Button icon={ act.sms&&act.sms.text?'':'edit menu' } onClick={()=>{ act.index = index; actsStore.dialogs.smsDialog.handleToggle(act, actsStore.updActSms) }}>
+                                    { act.sms&&act.sms.text?act.sms.text.trim().slice(0,10):'' }
                                 </Button>
                             </Chip>
               case 1:return <Chip key={index} deletable onDeleteClick={actsStore.delAct.bind(this,index)}>
-                                <Avatar style={{backgroundColor: 'deepskyblue'}} icon='email'  />
+                                <Avatar style={ {backgroundColor: 'deepskyblue'} } icon='email'  />
                                 <Button icon={act.email&&act.email.subject?'':'edit menu'} onClick={()=>{ act.index = index; actsStore.dialogs.emailDialog.handleToggle(act, actsStore.updActEmail) }}>
-                                    {act.email&&act.email.subject?act.email.subject.trim().slice(0,10):''}
+                                    { act.email&&act.email.subject?act.email.subject.trim().slice(0,10):'' }
                                 </Button>
           </Chip>                           
               default:
